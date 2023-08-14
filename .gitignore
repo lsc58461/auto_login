@@ -1,0 +1,8 @@
+test.py
+.spec
+.log
+Auto_Login.exe
+nix/
+dist/
+build/
+KEY.json
