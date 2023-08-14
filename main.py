@@ -1,4 +1,4 @@
-# pyinstaller -w --uac-admin --onefile --icon=.\NIX.ico --add-data "NIX.ico;." --add-data "Initial_Setting.exe;." --add-data "update.exe;." --add-data "login_page.png;." --add-data "login_result_1.png;." --add-data "login_result_2.png;." --add-data "LOL_button.png;." --add-data "play_button.png;."--name=Auto_Login main.py
+# pyinstaller -w --uac-admin --onefile --icon=.\NIX.ico --add-data "NIX.ico;." --add-data "Initial_Setting.exe;." --add-data "update.exe;." --add-data "login_success_form.png;." --add-data "login_page.png;." --add-data "login_result_1.png;." --add-data "login_result_2.png;." --add-data "LOL_button.png;." --add-data "play_button.png;."--name=Auto_Login main.py
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QFileDialog, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView, QListWidgetItem, QListWidget, QWhatsThis
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon, QPixmap, QCursor
