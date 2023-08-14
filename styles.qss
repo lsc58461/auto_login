@@ -1,0 +1,140 @@
+QLabel {
+    background-color: transparent;
+    color: gray;
+    font-weight: bold;
+    padding: 5px;
+}
+
+#account-label {
+    color: gray;
+    font-weight: 400;
+    padding: 4px 0 0 0;
+}
+
+#display-account-label {
+    color: gray;
+    padding: 0;
+    font-size: 12px;
+}
+
+QPushButton {
+  border-radius: 10px;
+  background-color: rgb(58, 150, 255);
+  color: white;
+  font-weight: bold;
+  padding: 8px
+}
+
+QPushButton:hover {
+  background-color: rgb(58, 100, 255);
+}
+
+QPushButton:pressed {
+  background-color: rgb(58, 200, 255);
+}
+
+#button {
+  border-radius: 10px;
+  background-color: rgb(58, 150, 255);
+  color: white;
+  font-weight: bold;
+}
+
+#button:hover {
+  background-color: rgb(58, 100, 255);
+}
+
+#button:pressed {
+  background-color: rgb(58, 200, 255);
+}
+
+QCheckBox {
+    background-color: #bbb;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+QCheckBox::indicator {
+  background-color: white;
+  width: 21px;
+  height: 21px;
+  border-radius: 5px;
+}
+
+QCheckBox::indicator:checked {
+  margin-left: 25px;
+  background-color: rgba(255, 255, 0, 0.7);
+}
+
+QCheckBox::indicator:unchecked {
+  background-color: #808080;
+}
+
+QLineEdit {
+    border: 2px solid rgb(58, 150, 255);
+    border-radius: 10px;
+    padding: 5px;
+    background-color: white;
+    color: black;
+}
+
+QLineEdit:hover {
+    border-color: rgb(58, 100, 255);
+}
+
+QLineEdit:focus {
+    border-color: rgb(58, 200, 255);
+}
+
+QListView {
+    border: 2px solid rgb(58, 150, 255);
+    background-color: white;
+    border-radius: 5px;
+}
+
+QListView::item {
+    padding: 5px;
+}
+
+QListView::item:selected {
+    background-color: rgb(58, 200, 255);
+}
+
+QScrollBar:vertical { 
+    border: none;
+    background: white;
+    width: 10px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+    stop: 0 rgb(58, 150, 255),
+    stop: 0.5 rgb(58, 150, 255),
+    stop: 1 rgb(58, 150, 255));
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: rgb(58, 100, 255);
+}
+
+QScrollBar::handle:vertical:pressed {
+    background: rgb(58, 200, 255);
+}
+
+QScrollBar::add-line:vertical {
+    background: none;
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical {
+    background: none;
+    height: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}

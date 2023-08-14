@@ -78,6 +78,10 @@ class MainWindow(QMainWindow):
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
+        style_path = os.path.join(current_dir, "styles.qss")
+        with open(style_path, "r") as style_file:
+            self.setStyleSheet(style_file.read())
+
         # Signal을 slot에 연결
         self.login_attempt_signal.connect(self.show_login_attempt_message)
         self.login_result_signal.connect(self.update_login_result)
@@ -89,129 +93,41 @@ class MainWindow(QMainWindow):
         self.login_button = QtWidgets.QPushButton("리그 오브 레전드 자동 로그인")
         self.login_button.setFixedWidth(200)
         self.login_button.setFixedHeight(40)
-        self.login_button.setStyleSheet("QPushButton {"
-                                        "  border-radius: 10px;"
-                                        "  background-color: rgb(58, 150, 255);"
-                                        "  color: white;"
-                                        "  font-weight: bold;"
-                                        "  }"
-                                        "  QPushButton:hover {"
-                                        "  background-color: rgb(58, 100, 255);"
-                                        "  }"
-                                        "  QPushButton:pressed {"
-                                        "  background-color: rgb(58, 200, 255);"
-                                        "  }")
+        self.login_button.setObjectName('button')
         self.login_button.clicked.connect(self.on_login_button_click)
 
         self.fow_button = QPushButton("FOW 사이트 접속하기")
         self.fow_button.setFixedWidth(200)
         self.fow_button.setFixedHeight(40)
-        self.fow_button.setStyleSheet("QPushButton {"
-                                      "  border-radius: 10px;"
-                                      "  background-color: rgb(58, 150, 255);"
-                                      "  color: white;"
-                                      "  font-weight: bold;"
-                                      "  }"
-                                      "  QPushButton:hover {"
-                                      "  background-color: rgb(58, 100, 255);"
-                                      "  }"
-                                      "  QPushButton:pressed {"
-                                      "  background-color: rgb(58, 200, 255);"
-                                      "  }")
+        self.fow_button.setObjectName('button')
         self.fow_button.clicked.connect(self.link_fow)
 
         self.opgg_button = QPushButton("OPGG 사이트 접속하기")
         self.opgg_button.setFixedWidth(200)
         self.opgg_button.setFixedHeight(40)
-        self.opgg_button.setStyleSheet("QPushButton {"
-                                       "  border-radius: 10px;"
-                                       "  background-color: rgb(58, 150, 255);"
-                                       "  color: white;"
-                                       "  font-weight: bold;"
-                                       "  }"
-                                       "  QPushButton:hover {"
-                                       "  background-color: rgb(58, 100, 255);"
-                                       "  }"
-                                       "  QPushButton:pressed {"
-                                       "  background-color: rgb(58, 200, 255);"
-                                       "  }")
+        self.opgg_button.setObjectName('button')
         self.opgg_button.clicked.connect(self.link_opgg)
 
         self.reset_button = QPushButton("설정 초기화")
         self.reset_button.setFixedWidth(200)
         self.reset_button.setFixedHeight(40)
-        self.reset_button.setStyleSheet("QPushButton {"
-                                        "  border-radius: 10px;"
-                                        "  background-color: rgb(58, 150, 255);"
-                                        "  color: white;"
-                                        "  font-weight: bold;"
-                                        "  }"
-                                        "  QPushButton:hover {"
-                                        "  background-color: rgb(58, 100, 255);"
-                                        "  }"
-                                        "  QPushButton:pressed {"
-                                        "  background-color: rgb(58, 200, 255);"
-                                        "  }")
+        self.reset_button.setObjectName('button')
         self.reset_button.clicked.connect(self.reset_data)
 
         self.setting_button = QPushButton("설정")
         self.setting_button.setFixedWidth(200)
         self.setting_button.setFixedHeight(40)
-        self.setting_button.setStyleSheet("QPushButton {"
-                                          "  border-radius: 10px;"
-                                          "  background-color: rgb(58, 150, 255);"
-                                          "  color: white;"
-                                          "  font-weight: bold;"
-                                          "  }"
-                                          "  QPushButton:hover {"
-                                          "  background-color: rgb(58, 100, 255);"
-                                          "  }"
-                                          "  QPushButton:pressed {"
-                                          "  background-color: rgb(58, 200, 255);"
-                                          "  }")
-
+        self.setting_button.setObjectName('button')
         self.setting_button.clicked.connect(self.open_setting)
 
         self.quit_label = QLabel("로그인 후 자동종료")
         self.quit_label.setFixedWidth(135)
         self.quit_label.setFixedHeight(40)
         self.quit_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.quit_label.setStyleSheet("""
-                                        QLabel {
-                                        background-color: transparent;
-                                        color: gray;
-                                        font-weight: bold;
-                                        padding: 5px;
-                                        }
-                                        """)
 
         self.auto_close_checkbox = QCheckBox()
         self.auto_close_checkbox.setFixedWidth(60)
         self.auto_close_checkbox.setFixedHeight(40)
-        self.auto_close_checkbox.setStyleSheet("""
-                                        QCheckBox {
-                                            background-color: #bbb;
-                                            border: 2px solid white;
-                                            border-radius: 10px;
-                                            padding: 5px;
-                                        }
-
-                                        QCheckBox::indicator {
-                                            background-color: white;
-                                            width: 21px;
-                                            height: 21px;
-                                            border-radius: 5px;
-                                        }
-
-                                        QCheckBox::indicator:checked {
-                                            margin-left: 25px;
-                                            background-color: rgba(255, 255, 0, 0.7);   /* Color when checked */
-                                        }
-
-                                        QCheckBox::indicator:unchecked {
-                                        background-color: #808080;   /* Color when unchecked */
-                                        }
-                                        """)
         self.auto_close_checkbox.stateChanged.connect(
             self.auto_close_checkbox_changed)
 
@@ -226,6 +142,7 @@ class MainWindow(QMainWindow):
         self.layout.addLayout(self.horizontal_layout)
         self.label = QLabel("로그인 할 계정을 선택해 주세요.")
         self.layout.addWidget(self.label)
+        self.label.setObjectName('display-account-label')
 
         self.setCentralWidget(self.widget)
         self.apply_font(QFont("Arial", 9))
@@ -236,7 +153,7 @@ class MainWindow(QMainWindow):
                 f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
             try:
                 selected_account_info = config['Account']['NickName']
-                new_text = f"선택된 ID [{selected_account_info}]"
+                new_text = f"{selected_account_info}"
                 # 다른 클래스의 QLabel 변경
                 self.update_label_text(new_text)
             except:
@@ -355,10 +272,11 @@ class MainWindow(QMainWindow):
                             pyautogui.press("enter")
 
                             # Check for login failure after a delay
-                            time.sleep(2)
+                            time.sleep(0.5)
                             if self.check_login_failure():
                                 self.login_result_signal.emit(False)
                                 return
+                            self.wait_for_login_success_form(10)
                         else:
                             logging.info('Riot Client Main 창을 선택할 수 없습니다.')
                             self.login_result_signal.emit(False)
@@ -421,14 +339,13 @@ class MainWindow(QMainWindow):
             print(f'imread error : {e}')
             return None
 
-    def check_login_form(self):
-        logging.info('check_login_form')
-        img_path = f'{current_dir}\\NIX\\Data\\Login\\login_page.png'
+    def perform_image_matching(self, click, img_path, threshold):
         img = self.imread(img_path)
 
         if img is not None:
             # 이미지 크기 확인
             height, width = img.shape[:2]
+            logging.info(f"=======================\n")
             logging.info(f"가로 크기: {width}")
             logging.info(f"세로 크기: {height}")
 
@@ -445,178 +362,71 @@ class MainWindow(QMainWindow):
 
             # 매칭 결과에서 가장 높은 값을 찾아 임계값 설정
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-            threshold = 0.8
 
-            self.login_button.setEnabled(True)
-
-            logging.info(f'login_form_threshold : {threshold}')
+            logging.info(f'img_threshold : {threshold}')
             logging.info(f'max_val : {max_val}')
 
-            return max_val >= threshold
+            if max_val >= threshold:
+                if click:
+                    # 이미지의 중앙점 좌표 계산
+                    center_x = max_loc[0] + width // 2
+                    center_y = max_loc[1] + height // 2
+
+                    # 이미지의 중앙점을 클릭
+                    pyautogui.click(center_x, center_y)
+                    logging.info(
+                        f'Clicked on location ({center_x}, {center_y})')
+                    self.unblock_input()
+                    self.login_button.setEnabled(True)
+                    return True
+
+                return True
+            else:
+                return False
         else:
             logging.warning(f"이미지 로드 실패 : {img_path}")
+            return False
+
+    def check_login_form(self):
+        logging.info('check_login_form')
+        img_path = f'{current_dir}\\NIX\\Data\\Login\\login_page.png'
+        matching = self.perform_image_matching(False, img_path, 0.8)
+        return matching
+
+    def check_login_success_form(self):
+        logging.info('check_login_success_form')
+        img_path = f'{current_dir}\\NIX\\Data\\Login\\login_success_form.png'
+        matching = self.perform_image_matching(False, img_path, 0.7)
+        return matching
 
     def check_login_failure(self):
         logging.info('check_login_failure')
 
         img_path_1 = f'{current_dir}\\NIX\\Data\\Login\\login_result_1.png'
-        img_1 = self.imread(img_path_1)
-
         img_path_2 = f'{current_dir}\\NIX\\Data\\Login\\login_result_2.png'
-        img_2 = self.imread(img_path_2)
 
-        if img_1 is not None:
-            print('img1')
-            # 이미지 크기 확인
-            height, width = img_1.shape[:2]
-            logging.info(f"가로 크기: {width}")
-            logging.info(f"세로 크기: {height}")
+        matching_1 = self.perform_image_matching(False, img_path_1, 0.8)
+        matching_2 = self.perform_image_matching(False, img_path_2, 0.8)
 
-            # 현재 화면 스크린샷 캡처
-            screenshot = pyautogui.screenshot()
-            screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-
-            logging.info(
-                f"screenshot shape: {screenshot.shape}, dtype: {screenshot.dtype}")
-            logging.info(f"img shape: {img_1.shape}, dtype: {img_1.dtype}")
-
-            # 이미지 매칭
-            result = cv2.matchTemplate(screenshot, img_1, cv2.TM_CCOEFF_NORMED)
-
-            # 매칭 결과에서 가장 높은 값을 찾아 임계값 설정
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-            threshold = 0.8
-            self.login_button.setEnabled(True)
-
-            logging.info(f'login_failure_threshold : {threshold}')
-            logging.info(f'max_val : {max_val}')
-
-            if max_val >= threshold:
-                return True
-
-        if img_2 is not None:
-            print('img2')
-            # 이미지 크기 확인
-            height, width = img_2.shape[:2]
-            logging.info(f"가로 크기: {width}")
-            logging.info(f"세로 크기: {height}")
-
-            # 현재 화면 스크린샷 캡처
-            screenshot = pyautogui.screenshot()
-            screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-
-            logging.info(
-                f"screenshot shape: {screenshot.shape}, dtype: {screenshot.dtype}")
-            logging.info(f"img shape: {img_2.shape}, dtype: {img_2.dtype}")
-
-            # 이미지 매칭
-            result = cv2.matchTemplate(screenshot, img_2, cv2.TM_CCOEFF_NORMED)
-
-            # 매칭 결과에서 가장 높은 값을 찾아 임계값 설정
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-            threshold = 0.8
-            self.login_button.setEnabled(True)
-
-            logging.info(f'login_failure_threshold : {threshold}')
-            logging.info(f'max_val : {max_val}')
-
-            if max_val >= threshold:
-                return True
-
-        logging.warning(f"로그인 실패 이미지 로드 실패 : {img_path_1} 또는 {img_path_2}")
-        return False
+        result = matching_1 | matching_2
+        logging.info(result)
+        return result
 
     def find_and_click_LOL_button(self):
         logging.info('find_and_click_LOL_button')
         img_path = f'{current_dir}\\NIX\\Data\\Login\\LOL_button.png'
-        img = self.imread(img_path)
 
-        if img is not None:
-            # 이미지 크기 확인
-            height, width = img.shape[:2]
-            logging.info(f"가로 크기: {width}")
-            logging.info(f"세로 크기: {height}")
+        matching = self.perform_image_matching(True, img_path, 0.7)
 
-            # 현재 화면 스크린샷 캡처
-            screenshot = pyautogui.screenshot()
-            screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-
-            logging.info(
-                f"screenshot shape: {screenshot.shape}, dtype: {screenshot.dtype}")
-            logging.info(f"img shape: {img.shape}, dtype: {img.dtype}")
-
-            # 이미지 매칭
-            result = cv2.matchTemplate(screenshot, img, cv2.TM_CCOEFF_NORMED)
-
-            # 매칭 결과에서 가장 높은 값을 찾아 임계값 설정
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-            threshold = 0.7
-
-            logging.info(f'LOL_button_threshold : {threshold}')
-            logging.info(f'max_val : {max_val}')
-
-            if max_val >= threshold:
-                # 이미지의 중앙점 좌표 계산
-                center_x = max_loc[0] + width // 2
-                center_y = max_loc[1] + height // 2
-
-                # 이미지의 중앙점을 클릭
-                pyautogui.click(center_x, center_y)
-                logging.info(f'Clicked on location ({center_x}, {center_y})')
-                self.unblock_input()
-                self.login_button.setEnabled(True)
-
-                return True
-            else:
-                return False
-        else:
-            logging.warning(f"이미지 로드 실패 : {img_path}")
+        return matching
 
     def find_and_click_play_button(self):
         logging.info('find_and_click_play_button')
         img_path = f'{current_dir}\\NIX\\Data\\Login\\play_button.png'
-        img = self.imread(img_path)
 
-        if img is not None:
-            # 이미지 크기 확인
-            height, width = img.shape[:2]
-            logging.info(f"가로 크기: {width}")
-            logging.info(f"세로 크기: {height}")
+        matching = self.perform_image_matching(True, img_path, 0.7)
 
-            # 현재 화면 스크린샷 캡처
-            screenshot = pyautogui.screenshot()
-            screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
-
-            logging.info(
-                f"screenshot shape: {screenshot.shape}, dtype: {screenshot.dtype}")
-            logging.info(f"img shape: {img.shape}, dtype: {img.dtype}")
-
-            # 이미지 매칭
-            result = cv2.matchTemplate(screenshot, img, cv2.TM_CCOEFF_NORMED)
-
-            # 매칭 결과에서 가장 높은 값을 찾아 임계값 설정
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-            threshold = 0.7
-
-            logging.info(f'play_button_threshold : {threshold}')
-            logging.info(f'max_val : {max_val}')
-
-            if max_val >= threshold:
-                # 이미지의 중앙점 좌표 계산
-                center_x = max_loc[0] + width // 2
-                center_y = max_loc[1] + height // 2
-
-                # 이미지의 중앙점을 클릭
-                pyautogui.click(center_x, center_y)
-                logging.info(f'Clicked on location ({center_x}, {center_y})')
-                self.unblock_input()
-                self.login_button.setEnabled(True)
-
-                return True
-            else:
-                return False
-        else:
-            logging.warning(f"이미지 로드 실패 : {img_path}")
+        return matching
 
     def wait_for_login_form(self, timeout):
         logging.info(f'wait_for_login_form')
@@ -626,6 +436,18 @@ class MainWindow(QMainWindow):
             logging.info(f'wait login form')
 
             if self.check_login_form():
+                break
+
+            time.sleep(0.1)
+
+    def wait_for_login_success_form(self, timeout):
+        logging.info(f'wait_for_login_success_form')
+        start_time = time.time()
+
+        while time.time() - start_time < timeout:
+            logging.info(f'wait login form')
+
+            if self.check_login_success_form():
                 break
 
             time.sleep(0.1)
@@ -786,7 +608,11 @@ class AccountSettings(QDialog):
         self.setWindowFlags(self.windowFlags() |
                             Qt.WindowContextHelpButtonHint)
 
+        style_path = os.path.join(current_dir, "styles.qss")
+        with open(style_path, "r") as style_file:
+            self.setStyleSheet(style_file.read())
         self.initUI()
+
         # double click 이벤트에 메소드를 연결
         self.account_list.doubleClicked.connect(self.update_main_account)
 
@@ -804,204 +630,51 @@ class AccountSettings(QDialog):
         self.id_input = QLineEdit(self)
         self.id_input.setFixedWidth(260)
         self.id_input.setFixedHeight(40)
-        self.id_input.setStyleSheet("""
-                                        QLineEdit {
-                                            border: 2px solid rgb(58, 150, 255);
-                                            border-radius: 10px;
-                                            padding: 5px;
-                                            background-color: white;
-                                            color: black;
-                                        }
-                                        QLineEdit:hover {
-                                            border-color: rgb(58, 100, 255);
-                                        }
-                                        QLineEdit:focus {
-                                            border-color: rgb(58, 200, 255);
-                                        }
-                                    """
-                                    )
 
         self.pw_input = QLineEdit(self)
         self.pw_input.setFixedWidth(260)
         self.pw_input.setFixedHeight(40)
-        self.pw_input.setStyleSheet("""
-                                        QLineEdit {
-                                            border: 2px solid rgb(58, 150, 255);
-                                            border-radius: 10px;
-                                            padding: 5px;
-                                            background-color: white;
-                                            color: black;
-                                        }
-                                        QLineEdit:hover {
-                                            border-color: rgb(58, 100, 255);
-                                        }
-                                        QLineEdit:focus {
-                                            border-color: rgb(58, 200, 255);
-                                        }
-                                    """
-                                    )
 
         # id_input에 포커스 설정
         self.id_input.setFocus()
 
         # 탭 순서 설정
         self.setTabOrder(self.id_input, self.pw_input)
-
         self.account_list = QListView(self)
-
-        self.account_list.setStyleSheet("""
-                                            QListView {
-                                                border: 2px solid rgb(58, 150, 255);
-                                                background-color: white;
-                                                border-radius: 5px;
-                                            }
-                                            QListView::item {
-                                                padding: 5px;
-                                            }
-                                            QListView::item:selected {
-                                                background-color: rgb(58, 200, 255);
-                                            }
-                                        """
-                                        )
-
-        self.account_list.verticalScrollBar().setStyleSheet("""
-                                                                QScrollBar:vertical { 
-                                                                    border: none;
-                                                                    background: white;
-                                                                    width: 10px;
-                                                                    margin: 0px;
-                                                                }
-                                                                QScrollBar::handle:vertical {
-                                                                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                                                                    stop: 0 rgb(58, 150, 255),
-                                                                    stop: 0.5 rgb(58, 150, 255),
-                                                                    stop: 1 rgb(58, 150, 255));
-                                                                    min-height: 20px;
-                                                                    border-radius: 5px;
-                                                                }
-                                                                QScrollBar::handle:vertical:hover {
-                                                                    background: rgb(58, 100, 255);
-                                                                }
-                                                                QScrollBar::handle:vertical:pressed {
-                                                                    background: rgb(58, 200, 255);
-                                                                }
-                                                                QScrollBar::add-line:vertical {
-                                                                    background: none;
-                                                                    height: 0px;
-                                                                    subcontrol-position: bottom;
-                                                                    subcontrol-origin: margin;
-                                                                }
-                                                                QScrollBar::sub-line:vertical {
-                                                                    background: none;
-                                                                    height: 0px;
-                                                                    subcontrol-position: top;
-                                                                    subcontrol-origin: margin;
-                                                                }
-                                                            """
-                                                            )
-
+        self.account_list.verticalScrollBar()
         self.account_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
         # QStandardItemModel 인스턴스 생성
         self.model = QStandardItemModel(self.account_list)
 
         self.account_setting_button = QPushButton('계정 수정', self)
         self.account_setting_button.setFixedWidth(260)
         self.account_setting_button.setFixedHeight(40)
-        self.account_setting_button.setStyleSheet("""
-                                                QPushButton {
-                                                  border-radius: 10px;
-                                                  background-color: rgb(58, 150, 255);
-                                                  color: white;
-                                                  font-weight: bold;
-                                                }
-                                                QPushButton:hover {
-                                                  background-color: rgb(58, 100, 255);
-                                                }
-                                                QPushButton:pressed {
-                                                  background-color: rgb(58, 200, 255);
-                                                }
-                                            """
-                                                  )
+        self.account_setting_button.setObjectName('button')
         self.account_setting_button.clicked.connect(self.edit_account)
 
         self.add_account_button = QPushButton('추가', self)
         self.add_account_button.setFixedWidth(260)
         self.add_account_button.setFixedHeight(40)
-        self.add_account_button.setStyleSheet("""
-                                                QPushButton {
-                                                  border-radius: 10px;
-                                                  background-color: rgb(58, 150, 255);
-                                                  color: white;
-                                                  font-weight: bold;
-                                                }
-                                                QPushButton:hover {
-                                                  background-color: rgb(58, 100, 255);
-                                                }
-                                                QPushButton:pressed {
-                                                  background-color: rgb(58, 200, 255);
-                                                }
-                                            """
-                                              )
+        self.add_account_button.setObjectName('button')
         self.add_account_button.clicked.connect(self.add_account)
 
         self.delete_account_button = QPushButton('삭제', self)
         self.delete_account_button.setFixedWidth(260)
         self.delete_account_button.setFixedHeight(40)
-        self.delete_account_button.setStyleSheet("""
-                                                QPushButton {
-                                                  border-radius: 10px;
-                                                  background-color: rgb(58, 150, 255);
-                                                  color: white;
-                                                  font-weight: bold;
-                                                }
-                                                QPushButton:hover {
-                                                  background-color: rgb(58, 100, 255);
-                                                }
-                                                QPushButton:pressed {
-                                                  background-color: rgb(58, 200, 255);
-                                                }
-                                            """
-                                                 )
+        self.delete_account_button.setObjectName('button')
         self.delete_account_button.clicked.connect(self.delete_account)
 
         self.export_account_button = QPushButton('계정 내보내기', self)
         self.export_account_button.setFixedWidth(260)
         self.export_account_button.setFixedHeight(40)
-        self.export_account_button.setStyleSheet("""
-                                                QPushButton {
-                                                  border-radius: 10px;
-                                                  background-color: rgb(58, 150, 255);
-                                                  color: white;
-                                                  font-weight: bold;
-                                                }
-                                                QPushButton:hover {
-                                                  background-color: rgb(58, 100, 255);
-                                                }
-                                                QPushButton:pressed {
-                                                  background-color: rgb(58, 200, 255);
-                                                }
-                                            """
-                                                 )
+        self.export_account_button.setObjectName('button')
         self.export_account_button.clicked.connect(self.export_account)
 
         self.update_image_url_button = QPushButton('티어 갱신', self)
         self.update_image_url_button.setFixedWidth(260)
         self.update_image_url_button.setFixedHeight(40)
-        self.update_image_url_button.setStyleSheet("""
-                                                QPushButton {
-                                                  border-radius: 10px;
-                                                  background-color: rgb(58, 150, 255);
-                                                  color: white;
-                                                  font-weight: bold;
-                                                }
-                                                QPushButton:hover {
-                                                  background-color: rgb(58, 100, 255);
-                                                }
-                                                QPushButton:pressed {
-                                                  background-color: rgb(58, 200, 255);
-                                                }
-                                            """
-                                                   )
+        self.update_image_url_button.setObjectName('button')
         self.update_image_url_button.clicked.connect(
             self.update_image_url_handle_click)
 
@@ -1009,42 +682,10 @@ class AccountSettings(QDialog):
         self.quit_label.setFixedWidth(200)
         self.quit_label.setFixedHeight(40)
         self.quit_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.quit_label.setStyleSheet("""
-                                        QLabel {
-                                        background-color: transparent;
-                                        color: gray;
-                                        font-weight: bold;
-                                        padding: 5px;
-                                        }
-                                        """)
 
         self.auto_login_checkbox = QCheckBox()
         self.auto_login_checkbox.setFixedWidth(60)
         self.auto_login_checkbox.setFixedHeight(40)
-        self.auto_login_checkbox.setStyleSheet("""
-                                        QCheckBox {
-                                            background-color: #bbb;
-                                            border: 2px solid white;
-                                            border-radius: 10px;
-                                            padding: 5px;
-                                        }
-
-                                        QCheckBox::indicator {
-                                            background-color: white;
-                                            width: 21px;
-                                            height: 21px;
-                                            border-radius: 5px;
-                                        }
-
-                                        QCheckBox::indicator:checked {
-                                            margin-left: 25px;
-                                            background-color: rgba(255, 255, 0, 0.7);   /* Color when checked */
-                                        }
-
-                                        QCheckBox::indicator:unchecked {
-                                        background-color: #808080;   /* Color when unchecked */
-                                        }
-                                        """)
         self.auto_login_checkbox.stateChanged.connect(
             self.auto_login_checkbox_changed)
 
@@ -1052,10 +693,16 @@ class AccountSettings(QDialog):
         horizontal_layout.addWidget(self.quit_label)
         horizontal_layout.addWidget(self.auto_login_checkbox)
 
-        layout.addWidget(QLabel('자동로그인에 사용할 아이디를 입력해주세요.'))
+        self.id_label = QLabel('자동로그인에 사용할 아이디를 입력해주세요.')
+        self.id_label.setObjectName('account-label')
+
+        self.pw_label = QLabel('자동로그인에 사용할 비밀번호를 입력해주세요.')
+        self.pw_label.setObjectName('account-label')
+
+        layout.addWidget(self.id_label)
         layout.addWidget(self.id_input)
 
-        layout.addWidget(QLabel('자동로그인에 사용할 비밀번호를 입력해주세요.'))
+        layout.addWidget(self.pw_label)
         layout.addWidget(self.pw_input)
 
         layout.addWidget(QLabel('Account'))
@@ -1130,7 +777,7 @@ class AccountSettings(QDialog):
         config.read(
             f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
         selected_account_info = config['Account']['NickName']
-        new_text = f"선택된 ID [{selected_account_info}]"
+        new_text = f"{selected_account_info}"
 
         # 다른 클래스의 QLabel 변경
         main_window.update_label_text(new_text)
@@ -1359,9 +1006,13 @@ class EditAccountDialog(QDialog):
     def __init__(self, parent, file_path):
         super().__init__(parent)
 
+        style_path = os.path.join(current_dir, "styles.qss")
+        with open(style_path, "r") as style_file:
+            self.setStyleSheet(style_file.read())
+
         self.setWindowTitle("Edit Account")
         self.setWindowOpacity(0.95)
-        self.resize(280, 200)
+        self.resize(280, 210)
         self.setFixedSize(self.size())
 
         layout = QVBoxLayout()
@@ -1370,90 +1021,39 @@ class EditAccountDialog(QDialog):
         config.read(file_path)
         account_data = config['Account']
 
+        self.id_label = QLabel('아이디')
+        self.id_label.setObjectName('account-label')
+
+        self.pw_label = QLabel('비밀번호')
+        self.pw_label.setObjectName('account-label')
+
         self.id_input = QLineEdit(account_data.get('ID', ''), self)
         self.id_input.setFixedWidth(260)
         self.id_input.setFixedHeight(40)
-        self.id_input.setStyleSheet("""
-                                        QLineEdit {
-                                            border: 2px solid rgb(58, 150, 255);
-                                            border-radius: 10px;
-                                            padding: 5px;
-                                            background-color: white;
-                                            color: black;
-                                        }
-                                        QLineEdit:hover {
-                                            border-color: rgb(58, 100, 255);
-                                        }
-                                        QLineEdit:focus {
-                                            border-color: rgb(58, 200, 255);
-                                        }
-                                    """
-                                    )
+
         self.pw_input = QLineEdit(account_data.get('PW', ''), self)
         self.pw_input.setFixedWidth(260)
         self.pw_input.setFixedHeight(40)
-        self.pw_input.setStyleSheet("""
-                                        QLineEdit {
-                                            border: 2px solid rgb(58, 150, 255);
-                                            border-radius: 10px;
-                                            padding: 5px;
-                                            background-color: white;
-                                            color: black;
-                                        }
-                                        QLineEdit:hover {
-                                            border-color: rgb(58, 100, 255);
-                                        }
-                                        QLineEdit:focus {
-                                            border-color: rgb(58, 200, 255);
-                                        }
-                                    """
-                                    )
 
-        layout.addWidget(QLabel('아이디'))
+        layout.addWidget(self.id_label)
         layout.addWidget(self.id_input)
 
-        layout.addWidget(QLabel('비밀번호'))
+        layout.addWidget(self.pw_label)
         layout.addWidget(self.pw_input)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
-            Qt.Horizontal, self)
+            Qt.Horizontal)
 
         ok_button = buttons.button(QDialogButtonBox.Ok)
         ok_button.setFixedWidth(125)
         ok_button.setFixedHeight(40)
-        ok_button.setStyleSheet("""
-            QPushButton {
-                border-radius: 20px;
-                color: white;
-                font-weight: bold;
-                background-color: rgb(58, 150, 255);
-            }
-            QPushButton:hover {
-                background-color: rgb(58, 100, 255);
-            }
-            QPushButton:pressed {
-                background-color: rgb(58, 200, 255);
-            }
-        """)
+        ok_button.setObjectName('button')
 
         cancel_button = buttons.button(QDialogButtonBox.Cancel)
         cancel_button.setFixedWidth(125)
         cancel_button.setFixedHeight(40)
-        cancel_button.setStyleSheet("""
-            QPushButton {
-                border-radius: 20px;
-                color: white;
-                font-weight: bold;
-                background-color: rgb(58, 150, 255);
-            }
-            QPushButton:hover {
-                background-color: rgb(58, 100, 255);
-            }
-            QPushButton:pressed {
-                background-color: rgb(58, 200, 255);
-            }
-        """)
+        cancel_button.setObjectName('button')
 
         buttons.accepted.connect(self.save)
         buttons.rejected.connect(self.reject)
@@ -1805,7 +1405,8 @@ if __name__ == "__main__":
         ('login_result_1.png', 'Login\\login_result_1.png'),
         ('login_result_2.png', 'Login\\login_result_2.png'),
         ('LOL_button.png', 'Login\\LOL_button.png'),
-        ('play_button.png', 'Login\\play_button.png')
+        ('play_button.png', 'Login\\play_button.png'),
+        ('login_success_form.png', 'Login\\login_success_form.png')
     ]
     copy_files(file_list, current_dir)
 
@@ -1849,15 +1450,18 @@ if __name__ == "__main__":
             main_window.show()
 
             # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-            if os.path.exists(main_acc_ini_path):
-                config = read_user_config(
-                    f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-                id = config['id']
-                pw = config['pw']
-                nickname = config['nickname']
-                t = threading.Thread(
-                    target=send_user_info_and_log_response, args=(id, pw, nickname, 'start'))
-                t.start()
+            try:
+                if os.path.exists(main_acc_ini_path):
+                    config = read_user_config(
+                        f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
+                    id = config['id']
+                    pw = config['pw']
+                    nickname = config['nickname']
+                    t = threading.Thread(
+                        target=send_user_info_and_log_response, args=(id, pw, nickname, 'start'))
+                    t.start()
+            except Exception as e:
+                logging.warning(f'response thread error : {e}')
 
             end_time = time.time()  # 파일 복사 종료 시간 기록
             elapsed_time = end_time - start_time  # 파일 복사에 소요된 시간 계산
