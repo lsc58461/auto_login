@@ -1,5 +1,5 @@
-test.py
 *.spec
+test.py
 *.log
 Auto_Login.exe
 nix/
