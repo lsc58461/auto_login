@@ -1,6 +1,6 @@
 test.py
-.spec
-.log
+*.spec
+*.log
 Auto_Login.exe
 nix/
 dist/
