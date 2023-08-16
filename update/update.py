@@ -67,8 +67,8 @@ class LoadingWindow:
 
 def download_file(loading_window, progress):
     # replace with your FTP server details
-    ftp = FTP('dbserver.dothome.co.kr')
-    ftp.login('dbserver', 'dlswb4fkd!')
+    ftp = FTP('')
+    ftp.login('', '')
 
     # 접속 성공 후 파일 목록 가져오기
     file_list = ftp.nlst()

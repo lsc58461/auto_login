@@ -1,6 +1,6 @@
 # pyinstaller -w --uac-admin --onefile --icon=.\assets\icons\NIX.ico --add-data "NIX.ico;." --add-data ".\initial_setting\Initial_Setting.exe;." --add-data ".\update\update.exe;." --add-data ".\images\login_success_form.png;." --add-data ".\images\login_page.png;." --add-data ".\images\login_result_1.png;." --add-data ".\images\login_result_2.png;." --add-data ".\images\LOL_button.png;." --add-data ".\images\play_button.png;."--name=Auto_Login main.py
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QSizePolicy, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QGraphicsDropShadowEffect, QSizePolicy, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon, QPixmap, QCursor, QColor, QFontDatabase
 from PyQt5.QtCore import Qt, QModelIndex, QTimer, pyqtSignal, pyqtSlot
 from PyQt5 import QtCore, QtWidgets
@@ -34,7 +34,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # Riot API Key
-API_KEY = 'RGAPI-46002c19-672b-40ae-9e47-ce0309f9d207'
+API_KEY = ''
 
 REGION = 'kr'
 
@@ -108,6 +108,12 @@ class MainWindow(QMainWindow):
         self.account_list.verticalScrollBar()
         self.account_list.setFixedHeight(500)
         self.account_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.account_list_shadow = QGraphicsDropShadowEffect(self)
+        self.account_list_shadow.setBlurRadius(15)
+        self.account_list_shadow.setColor(QColor(0, 0, 0))
+        self.account_list_shadow.setOffset(0)
+        self.account_list.setGraphicsEffect(
+            self.account_list_shadow)
 
         # QStandardItemModel 인스턴스 생성
         self.model = QStandardItemModel(self.account_list)
@@ -123,6 +129,12 @@ class MainWindow(QMainWindow):
         self.add_account_button.setFixedHeight(24)
         self.add_account_button.setObjectName('tool-button')
         self.add_account_button.clicked.connect(self.add_account)
+        self.add_account_button_shadow = QGraphicsDropShadowEffect(self)
+        self.add_account_button_shadow.setBlurRadius(15)
+        self.add_account_button_shadow.setColor(QColor(0, 0, 0))
+        self.add_account_button_shadow.setOffset(0)
+        self.add_account_button.setGraphicsEffect(
+            self.add_account_button_shadow)
 
         icon_size = 10
         icon_path = f'{current_dir}\\NIX\\Data\\Assets\\delete.png'
@@ -134,6 +146,12 @@ class MainWindow(QMainWindow):
         self.delete_account_button.setFixedHeight(24)
         self.delete_account_button.setObjectName('tool-button')
         self.delete_account_button.clicked.connect(self.delete_account)
+        self.delete_account_button_shadow = QGraphicsDropShadowEffect(self)
+        self.delete_account_button_shadow.setBlurRadius(15)
+        self.delete_account_button_shadow.setColor(QColor(0, 0, 0))
+        self.delete_account_button_shadow.setOffset(0)
+        self.delete_account_button.setGraphicsEffect(
+            self.delete_account_button_shadow)
 
         icon_size = 13
         icon_path = f'{current_dir}\\NIX\\Data\\Assets\\edit.png'
@@ -145,6 +163,12 @@ class MainWindow(QMainWindow):
         self.account_setting_button.setFixedHeight(24)
         self.account_setting_button.setObjectName('tool-button')
         self.account_setting_button.clicked.connect(self.edit_account)
+        self.account_setting_button_shadow = QGraphicsDropShadowEffect(self)
+        self.account_setting_button_shadow.setBlurRadius(15)
+        self.account_setting_button_shadow.setColor(QColor(0, 0, 0))
+        self.account_setting_button_shadow.setOffset(0)
+        self.account_setting_button.setGraphicsEffect(
+            self.account_setting_button_shadow)
 
         self.horizontal_tools_layout = QHBoxLayout()
         self.horizontal_tools_layout.addStretch()
@@ -185,31 +209,34 @@ class MainWindow(QMainWindow):
         font_db = QFontDatabase()
 
         # 첫 번째 폰트 추가
-        font_path1 = f'{current_dir}\\NIX\\Data\\Assets\\NanumSquareL.ttf'
-        font_id1 = font_db.addApplicationFont(font_path1)
+        NanumSquare_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\NanumSquareL.ttf'
+        NanumSquare_Light_id = font_db.addApplicationFont(
+            NanumSquare_Light_path)
 
         # 두 번째 폰트 추가
-        font_path2 = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 M.ttf'
-        font_id2 = font_db.addApplicationFont(font_path2)
+        SB_Aggro_Medium = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 M.ttf'
+        SB_Aggro_Medium_id = font_db.addApplicationFont(SB_Aggro_Medium)
 
-        if font_id1 != -1 and font_id2 != -1:
-            font_family1 = font_db.applicationFontFamilies(font_id1)[0]
-            font_family2 = font_db.applicationFontFamilies(font_id2)[0]
+        if NanumSquare_Light_id != -1 and SB_Aggro_Medium_id != -1:
+            NanumSquare_Light_font_family = font_db.applicationFontFamilies(
+                NanumSquare_Light_id)[0]
+            SB_Aggro_Medium_font_family = font_db.applicationFontFamilies(SB_Aggro_Medium_id)[
+                0]
 
-            print(font_family1)
-            print(font_family2)
+            print(NanumSquare_Light_font_family)
+            print(SB_Aggro_Medium_font_family)
 
             # 첫 번째 폰트를 위한 QFont 객체 생성
-            font1 = QFont()
-            font1.setFamily(font_family1)
+            NanumSquare_Light_font = QFont()
+            NanumSquare_Light_font.setFamily(NanumSquare_Light_font_family)
 
             # 두 번째 폰트를 위한 QFont 객체 생성
-            font2 = QFont()
-            font2.setFamily(font_family2)
+            SB_Aggro_Medium_font = QFont()
+            SB_Aggro_Medium_font.setFamily(SB_Aggro_Medium_font_family)
 
             # 각 위젯에 해당 폰트 적용
-            self.title_label.setFont(font1)
-            self.account_list.setFont(font2)
+            self.title_label.setFont(SB_Aggro_Medium_font)
+            self.account_list.setFont(NanumSquare_Light_font)
 
             # 필요한 경우 다른 위젯에도 해당 폰트 적용 가능
 
@@ -727,38 +754,60 @@ class AddAccountDialog(QDialog):
 
         self.setWindowTitle("Add Account")
         self.setWindowOpacity(0.9)
-        self.resize(280, 210)
+        self.resize(460, 210)
         self.setFixedSize(self.size())
 
         self.layout = QVBoxLayout()
 
         self.id_input = QLineEdit(self)
         self.id_input.setPlaceholderText("아이디")
-        self.id_input.setFixedWidth(260)
-        self.id_input.setFixedHeight(40)
+        self.id_input.setFixedWidth(404)
+        self.id_input.setFixedHeight(54)
         self.id_input.setObjectName('account-input')
+
+        self.id_input_shadow = QGraphicsDropShadowEffect(self)
+        self.id_input_shadow.setBlurRadius(20)
+        self.id_input_shadow.setColor(QColor(0, 0, 0))
+        self.id_input_shadow.setOffset(0)
+        self.id_input.setGraphicsEffect(self.id_input_shadow)
+
+        self.id_input_layout = QVBoxLayout()
+        self.id_input_layout.addWidget(self.id_input)
+        self.id_input_layout.setAlignment(Qt.AlignCenter)
 
         self.pw_input = QLineEdit(self)
         self.pw_input.setPlaceholderText("비밀번호")
-        self.pw_input.setFixedWidth(260)
-        self.pw_input.setFixedHeight(40)
+        self.pw_input.setFixedWidth(404)
+        self.pw_input.setFixedHeight(54)
         self.pw_input.setObjectName('account-input')
 
-        self.ok_button = QPushButton("OK", self)
-        self.ok_button.setFixedWidth(125)
-        self.ok_button.setFixedHeight(40)
+        self.pw_input_shadow = QGraphicsDropShadowEffect(self)
+        self.pw_input_shadow.setBlurRadius(20)
+        self.pw_input_shadow.setColor(QColor(0, 0, 0))
+        self.pw_input_shadow.setOffset(0)
+        self.pw_input.setGraphicsEffect(self.pw_input_shadow)
+
+        self.pw_input_layout = QVBoxLayout()
+        self.pw_input_layout.addWidget(self.pw_input)
+        self.pw_input_layout.setAlignment(Qt.AlignCenter)
+
+        self.ok_button = QPushButton("등록", self)
+        self.ok_button.setFixedWidth(90)
+        self.ok_button.setFixedHeight(36)
         self.ok_button.setObjectName('save-button')
         self.ok_button.clicked.connect(self.add_account)
+        self.ok_button_shadow = QGraphicsDropShadowEffect(self)
+        self.ok_button_shadow.setBlurRadius(20)
+        self.ok_button_shadow.setColor(QColor(0, 0, 0))
+        self.ok_button_shadow.setOffset(0)
+        self.ok_button.setGraphicsEffect(self.ok_button_shadow)
 
         self.button_layout = QVBoxLayout()
         self.button_layout.addWidget(self.ok_button)
         self.button_layout.setAlignment(Qt.AlignCenter)
-        self.button_layout.setSpacing(0)
-        self.button_layout.setContentsMargins(0, 0, 0, 0)
-        print(self.button_layout.getContentsMargins())
 
-        self.layout.addWidget(self.id_input)
-        self.layout.addWidget(self.pw_input)
+        self.layout.addLayout(self.id_input_layout)
+        self.layout.addLayout(self.pw_input_layout)
         self.layout.addLayout(self.button_layout)
 
         self.setLayout(self.layout)
@@ -768,20 +817,21 @@ class AddAccountDialog(QDialog):
 
         font_db = QFontDatabase()
 
-        font_path = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 M.ttf'
-        font_id = font_db.addApplicationFont(font_path)
+        SB_Aggro_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 L.ttf'
+        SB_Aggro_Light_id = font_db.addApplicationFont(SB_Aggro_Light_path)
 
-        if font_id != -1:
-            font_family = font_db.applicationFontFamilies(font_id)[0]
+        if SB_Aggro_Light_id != -1:
+            SB_Aggro_Light_font_family = font_db.applicationFontFamilies(SB_Aggro_Light_id)[
+                0]
 
-            print(font_family)
+            print(SB_Aggro_Light_font_family)
 
-            font = QFont()
-            font.setFamily(font_family)
+            SB_Aggro_Light_font = QFont()
+            SB_Aggro_Light_font.setFamily(SB_Aggro_Light_font_family)
 
             # 모든 위젯에 해당 폰트 적용
             for widget in self.findChildren(QWidget):
-                widget.setFont(font)
+                widget.setFont(SB_Aggro_Light_font)
 
         else:
             logging.warning("Font loading failed")
@@ -884,59 +934,93 @@ class EditAccountDialog(QDialog):
             self.setStyleSheet(style_file.read())
 
         self.setWindowTitle("Edit Account")
-        self.setWindowOpacity(0.95)
-        self.resize(280, 210)
+        self.setWindowOpacity(0.9)
+        self.resize(460, 210)
         self.setFixedSize(self.size())
-
-        layout = QVBoxLayout()
 
         config = configparser.ConfigParser()
         config.read(file_path)
         account_data = config['Account']
 
-        self.id_label = QLabel('아이디')
-        self.id_label.setObjectName('account-label')
-
-        self.pw_label = QLabel('비밀번호')
-        self.pw_label.setObjectName('account-label')
+        self.layout = QVBoxLayout()
 
         self.id_input = QLineEdit(account_data.get('ID', ''), self)
-        self.id_input.setFixedWidth(260)
-        self.id_input.setFixedHeight(40)
+        self.id_input.setPlaceholderText("아이디")
+        self.id_input.setFixedWidth(404)
+        self.id_input.setFixedHeight(54)
+        self.id_input.setObjectName('account-input')
+
+        self.id_input_shadow = QGraphicsDropShadowEffect(self)
+        self.id_input_shadow.setBlurRadius(20)
+        self.id_input_shadow.setColor(QColor(0, 0, 0))
+        self.id_input_shadow.setOffset(0)
+        self.id_input.setGraphicsEffect(self.id_input_shadow)
+
+        self.id_input_layout = QVBoxLayout()
+        self.id_input_layout.addWidget(self.id_input)
+        self.id_input_layout.setAlignment(Qt.AlignCenter)
 
         self.pw_input = QLineEdit(account_data.get('PW', ''), self)
-        self.pw_input.setFixedWidth(260)
-        self.pw_input.setFixedHeight(40)
+        self.pw_input.setPlaceholderText("비밀번호")
+        self.pw_input.setFixedWidth(404)
+        self.pw_input.setFixedHeight(54)
+        self.pw_input.setObjectName('account-input')
 
-        layout.addWidget(self.id_label)
-        layout.addWidget(self.id_input)
+        self.pw_input_shadow = QGraphicsDropShadowEffect(self)
+        self.pw_input_shadow.setBlurRadius(20)
+        self.pw_input_shadow.setColor(QColor(0, 0, 0))
+        self.pw_input_shadow.setOffset(0)
+        self.pw_input.setGraphicsEffect(self.pw_input_shadow)
 
-        layout.addWidget(self.pw_label)
-        layout.addWidget(self.pw_input)
+        self.pw_input_layout = QVBoxLayout()
+        self.pw_input_layout.addWidget(self.pw_input)
+        self.pw_input_layout.setAlignment(Qt.AlignCenter)
 
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel,
-            Qt.Horizontal)
+        self.ok_button = QPushButton("수정", self)
+        self.ok_button.setFixedWidth(90)
+        self.ok_button.setFixedHeight(36)
+        self.ok_button.setObjectName('save-button')
+        self.ok_button.clicked.connect(self.save)
+        self.ok_button_shadow = QGraphicsDropShadowEffect(self)
+        self.ok_button_shadow.setBlurRadius(20)
+        self.ok_button_shadow.setColor(QColor(0, 0, 0))
+        self.ok_button_shadow.setOffset(0)
+        self.ok_button.setGraphicsEffect(self.ok_button_shadow)
 
-        ok_button = buttons.button(QDialogButtonBox.Ok)
-        ok_button.setFixedWidth(125)
-        ok_button.setFixedHeight(40)
-        ok_button.setObjectName('button')
+        self.button_layout = QVBoxLayout()
+        self.button_layout.addWidget(self.ok_button)
+        self.button_layout.setAlignment(Qt.AlignCenter)
 
-        cancel_button = buttons.button(QDialogButtonBox.Cancel)
-        cancel_button.setFixedWidth(125)
-        cancel_button.setFixedHeight(40)
-        cancel_button.setObjectName('button')
+        self.layout.addLayout(self.id_input_layout)
+        self.layout.addLayout(self.pw_input_layout)
+        self.layout.addLayout(self.button_layout)
 
-        buttons.accepted.connect(self.save)
-        buttons.rejected.connect(self.reject)
-
-        layout.addWidget(buttons)
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
         self.config = config
         self.file_path = file_path
         self.parent = parent
+
+        font_db = QFontDatabase()
+
+        SB_Aggro_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 L.ttf'
+        SB_Aggro_Light_id = font_db.addApplicationFont(SB_Aggro_Light_path)
+
+        if SB_Aggro_Light_id != -1:
+            SB_Aggro_Light_font_family = font_db.applicationFontFamilies(SB_Aggro_Light_id)[
+                0]
+
+            print(SB_Aggro_Light_font_family)
+
+            SB_Aggro_Light_font = QFont()
+            SB_Aggro_Light_font.setFamily(SB_Aggro_Light_font_family)
+
+            # 모든 위젯에 해당 폰트 적용
+            for widget in self.findChildren(QWidget):
+                widget.setFont(SB_Aggro_Light_font)
+
+        else:
+            logging.warning("Font loading failed")
 
     def show_alert(self, title, text):
         alert = QMessageBox(self)
@@ -954,7 +1038,7 @@ class EditAccountDialog(QDialog):
         account_data_NickName = account_data.get('NickName', '')
         account_data_ID = account_data.get('ID', '')
         account_data_PW = account_data.get('PW', '')
-        account_data_ImageURL = account_data.get('PW', '')
+        account_data_ImageURL = account_data.get('ImageURL', '')
         logging.info(
             f'NICKNAME:{account_data_NickName}\ID:{account_data_ID}\PW:{account_data_PW}\ImageURL:{account_data_ImageURL}')
         old_account_data = {'NickName': account_data_NickName,
@@ -1044,7 +1128,7 @@ class EditAccountDialog(QDialog):
 
                 self.unsetCursor()
                 self.parent.refresh_list_view()
-                self.show_alert('알림', '변경 사항이 저정되었습니다.')
+                self.show_alert('알림', '변경 사항이 저장되었습니다.')
                 self.close()
 
 
@@ -1284,6 +1368,7 @@ if __name__ == "__main__":
         ('.\\images\\delete.png', 'Assets\\delete.png'),
         ('.\\images\\edit.png', 'Assets\\edit.png'),
         ('.\\assets\\fonts\\NanumSquareL.ttf', 'Assets\\NanumSquareL.ttf'),
+        ('.\\assets\\fonts\\SB 어그로 L.ttf', 'Assets\\SB 어그로 L.ttf'),
         ('.\\assets\\fonts\\SB 어그로 M.ttf', 'Assets\\SB 어그로 M.ttf'),
     ]
     copy_files(file_list, current_dir)

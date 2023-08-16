@@ -6,6 +6,10 @@ AddAccountDialog {
     background-color: #3a324d;
 }
 
+EditAccountDialog {
+    background-color: #3a324d;
+}
+
 QLabel {
     background-color: transparent;
     color: #fff;
@@ -16,7 +20,7 @@ QLabel {
 #title-label {
     color: #8d7cb3;
     padding-top: 5px;
-    font-size: 21px;
+    font-size: 22px;
 }
 
 #account-label {
@@ -55,11 +59,19 @@ QPushButton:pressed {
 }
 
 #save-button {
+    font-size: 18px;
     border-radius: 10px;
-    background-color: #594f71;
-    color: #aaa4b7;
-    font-weight: bold;
+    background-color: #786c95;
+    color: #d7d4dd;
     padding: 8px;
+}
+
+#save-button:hover {
+    background-color: #8d7cb3;
+}
+
+#save-button:pressed {
+    background-color: #d1bdff;
 }
 
 #button-layout {
@@ -106,12 +118,13 @@ QCheckBox::indicator:unchecked {
 }
 
 #account-input {
+    font-size: 18px;
     border: none;
     border-radius: 20px;
-    padding: 10px;
-    
+    padding-left: 15px;
+    margin-top: 10px;
     background-color: #786c95;
-    color: #fff;
+    color: #d7d4dd;
 }
 
 QLineEdit {
@@ -137,7 +150,7 @@ QListView {
     border: none;
     background-color: #605677;
     border-radius: 29px;
-    padding: 28px
+    padding: 28px;
 }
 
 QListView::item {
