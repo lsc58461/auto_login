@@ -34,7 +34,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # Riot API Key
-API_KEY = 'RGAPI-46002c19-672b-40ae-9e47-ce0309f9d207'
+API_KEY = ''
 
 REGION = 'kr'
 
