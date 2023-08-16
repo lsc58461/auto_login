@@ -1,8 +1,22 @@
+* {
+    background-color: #191b2d;
+}
+
+AddAccountDialog {
+    background-color: #3a324d;
+}
+
 QLabel {
     background-color: transparent;
-    color: gray;
+    color: #fff;
     font-weight: bold;
     padding: 5px;
+}
+
+#title-label {
+    color: #8d7cb3;
+    padding-top: 5px;
+    font-size: 21px;
 }
 
 #account-label {
@@ -34,18 +48,38 @@ QPushButton:pressed {
 }
 
 #button {
-  border-radius: 10px;
-  background-color: rgb(58, 150, 255);
-  color: white;
-  font-weight: bold;
+    border-radius: 10px;
+    background-color: transparent;
+    color: white;
+    font-weight: bold;
 }
 
-#button:hover {
-  background-color: rgb(58, 100, 255);
+#save-button {
+    border-radius: 10px;
+    background-color: #594f71;
+    color: #aaa4b7;
+    font-weight: bold;
+    padding: 8px;
 }
 
-#button:pressed {
-  background-color: rgb(58, 200, 255);
+#button-layout {
+    background-color: #fff;
+    padding: 0;
+}
+
+#tool-button {
+    border-radius: 12px;
+    background-color: #8d7cb3;
+    color: white;
+    font-weight: bold;
+}
+
+#tool-button:hover {
+    background-color: #7a6f94;
+}
+
+#tool-button:pressed {
+    background-color: #d1bdff;
 }
 
 QCheckBox {
@@ -71,6 +105,15 @@ QCheckBox::indicator:unchecked {
   background-color: #808080;
 }
 
+#account-input {
+    border: none;
+    border-radius: 20px;
+    padding: 10px;
+    
+    background-color: #786c95;
+    color: #fff;
+}
+
 QLineEdit {
     border: 2px solid rgb(58, 150, 255);
     border-radius: 10px;
@@ -88,9 +131,13 @@ QLineEdit:focus {
 }
 
 QListView {
-    border: 2px solid rgb(58, 150, 255);
-    background-color: white;
-    border-radius: 5px;
+    margin: 5px 30px 0 30px;
+    color: #fff;
+    font-size: 20px;
+    border: none;
+    background-color: #605677;
+    border-radius: 29px;
+    padding: 28px
 }
 
 QListView::item {
@@ -98,7 +145,7 @@ QListView::item {
 }
 
 QListView::item:selected {
-    background-color: rgb(58, 200, 255);
+    background-color: #7a6f94;
 }
 
 QScrollBar:vertical { 

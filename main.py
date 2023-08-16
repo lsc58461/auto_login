@@ -1,17 +1,15 @@
-# pyinstaller -w --uac-admin --onefile --icon=.\NIX.ico --add-data "NIX.ico;." --add-data "Initial_Setting.exe;." --add-data "update.exe;." --add-data "login_success_form.png;." --add-data "login_page.png;." --add-data "login_result_1.png;." --add-data "login_result_2.png;." --add-data "LOL_button.png;." --add-data "play_button.png;."--name=Auto_Login main.py
+# pyinstaller -w --uac-admin --onefile --icon=.\assets\icons\NIX.ico --add-data "NIX.ico;." --add-data ".\initial_setting\Initial_Setting.exe;." --add-data ".\update\update.exe;." --add-data ".\images\login_success_form.png;." --add-data ".\images\login_page.png;." --add-data ".\images\login_result_1.png;." --add-data ".\images\login_result_2.png;." --add-data ".\images\LOL_button.png;." --add-data ".\images\play_button.png;."--name=Auto_Login main.py
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QFileDialog, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView, QListWidgetItem, QListWidget, QWhatsThis
-from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon, QPixmap, QCursor
-from PyQt5.QtCore import Qt, QModelIndex, QTimer, QObject, pyqtSignal, QThread, QPoint, pyqtSlot
-from PyQt5 import QtCore, QtWidgets, QtGui
-from pathlib import Path
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QSizePolicy, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon, QPixmap, QCursor, QColor, QFontDatabase
+from PyQt5.QtCore import Qt, QModelIndex, QTimer, pyqtSignal, pyqtSlot
+from PyQt5 import QtCore, QtWidgets
 
 import os
 import sys
 import time
 import json
 import hashlib
-import win32con
 import ctypes
 import socket
 import shutil
@@ -38,15 +36,17 @@ from selenium.webdriver.support import expected_conditions as EC
 # Riot API Key
 API_KEY = 'RGAPI-46002c19-672b-40ae-9e47-ce0309f9d207'
 
-region = 'kr'
+REGION = 'kr'
 
-request_header = {
+REQUEST_HEADER = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
     "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6,zh-TW;q=0.5,zh;q=0.4,ja;q=0.3",
     "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
     "Origin": "https://developer.riotgames.com",
     "X-Riot-Token": API_KEY
 }
+
+ver = '4.0.0'
 
 
 class MainWindow(QMainWindow):
@@ -58,27 +58,24 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        # AccountSettings 클래스의 인스턴스 생성
-        self.account_settings = AccountSettings(self)
-
         # This line will hide the maximize button
         self.setWindowFlags(
             QtCore.Qt.Window | QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
 
-        self.setWindowTitle("Ver 3.5.1")
-        self.resize(219, 300)
+        self.setWindowTitle(ver)
+        self.resize(540, 670)
 
         # Fix the window size.
         self.setFixedSize(self.size())
 
+        self.setStyleSheet("background-color: #191b2d;")
         self.setWindowOpacity(0.9)
-        self.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.setWindowIcon(QIcon(f'{current_dir}\\NIX\\Data\\ICO\\NIX.ico'))
 
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
 
-        style_path = os.path.join(current_dir, "styles.qss")
+        style_path = os.path.join(current_dir, ".\\qss\\styles.qss")
         with open(style_path, "r") as style_file:
             self.setStyleSheet(style_file.read())
 
@@ -90,109 +87,152 @@ class MainWindow(QMainWindow):
         self.play_button_clicked_signal.connect(
             self.try_click_play_button_until_timeout)
 
-        self.login_button = QtWidgets.QPushButton("리그 오브 레전드 자동 로그인")
-        self.login_button.setFixedWidth(200)
-        self.login_button.setFixedHeight(40)
-        self.login_button.setObjectName('button')
-        self.login_button.clicked.connect(self.on_login_button_click)
+        self.id_input = QLineEdit(self)
+        self.id_input.setFixedWidth(260)
+        self.id_input.setFixedHeight(40)
 
-        self.fow_button = QPushButton("FOW 사이트 접속하기")
-        self.fow_button.setFixedWidth(200)
-        self.fow_button.setFixedHeight(40)
-        self.fow_button.setObjectName('button')
-        self.fow_button.clicked.connect(self.link_fow)
+        self.pw_input = QLineEdit(self)
+        self.pw_input.setFixedWidth(260)
+        self.pw_input.setFixedHeight(40)
 
-        self.opgg_button = QPushButton("OPGG 사이트 접속하기")
-        self.opgg_button.setFixedWidth(200)
-        self.opgg_button.setFixedHeight(40)
-        self.opgg_button.setObjectName('button')
-        self.opgg_button.clicked.connect(self.link_opgg)
+        # id_input에 포커스 설정
+        self.id_input.setFocus()
 
-        self.reset_button = QPushButton("설정 초기화")
-        self.reset_button.setFixedWidth(200)
-        self.reset_button.setFixedHeight(40)
-        self.reset_button.setObjectName('button')
-        self.reset_button.clicked.connect(self.reset_data)
+        self.title_label = QLabel("ACCOUNT")
+        self.title_label.setObjectName('title-label')
+        self.title_label.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.setting_button = QPushButton("설정")
-        self.setting_button.setFixedWidth(200)
-        self.setting_button.setFixedHeight(40)
-        self.setting_button.setObjectName('button')
-        self.setting_button.clicked.connect(self.open_setting)
+        # 탭 순서 설정
+        self.setTabOrder(self.id_input, self.pw_input)
+        self.account_list = QListView(self)
+        self.account_list.verticalScrollBar()
+        self.account_list.setFixedHeight(500)
+        self.account_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.quit_label = QLabel("로그인 후 자동종료")
-        self.quit_label.setFixedWidth(135)
-        self.quit_label.setFixedHeight(40)
-        self.quit_label.setAlignment(QtCore.Qt.AlignCenter)
+        # QStandardItemModel 인스턴스 생성
+        self.model = QStandardItemModel(self.account_list)
 
-        self.auto_close_checkbox = QCheckBox()
-        self.auto_close_checkbox.setFixedWidth(60)
-        self.auto_close_checkbox.setFixedHeight(40)
-        self.auto_close_checkbox.stateChanged.connect(
-            self.auto_close_checkbox_changed)
+        # 이미지 아이콘 크기 조절
+        icon_size = 10
+        icon_path = f'{current_dir}\\NIX\\Data\\Assets\\add.png'
+        pixmap = QPixmap(icon_path).scaled(icon_size, icon_size)
+        self.add_account_button = QPushButton('', self)
+        self.add_account_button.setIcon(QIcon(pixmap))
+        self.add_account_button.setToolTip("계정 추가")  # 툴팁 설정
+        self.add_account_button.setFixedWidth(24)
+        self.add_account_button.setFixedHeight(24)
+        self.add_account_button.setObjectName('tool-button')
+        self.add_account_button.clicked.connect(self.add_account)
 
-        self.horizontal_layout = QHBoxLayout()
-        self.horizontal_layout.addWidget(self.quit_label)
-        self.horizontal_layout.addWidget(self.auto_close_checkbox)
-        self.layout.addWidget(self.login_button)
-        self.layout.addWidget(self.fow_button)
-        self.layout.addWidget(self.opgg_button)
-        self.layout.addWidget(self.reset_button)
-        self.layout.addWidget(self.setting_button)
-        self.layout.addLayout(self.horizontal_layout)
-        self.label = QLabel("로그인 할 계정을 선택해 주세요.")
-        self.layout.addWidget(self.label)
-        self.label.setObjectName('display-account-label')
+        icon_size = 10
+        icon_path = f'{current_dir}\\NIX\\Data\\Assets\\delete.png'
+        pixmap = QPixmap(icon_path).scaled(icon_size, icon_size)
+        self.delete_account_button = QPushButton('', self)
+        self.delete_account_button.setIcon(QIcon(pixmap))
+        self.delete_account_button.setToolTip("계정 삭제")  # 툴팁 설정
+        self.delete_account_button.setFixedWidth(24)
+        self.delete_account_button.setFixedHeight(24)
+        self.delete_account_button.setObjectName('tool-button')
+        self.delete_account_button.clicked.connect(self.delete_account)
+
+        icon_size = 13
+        icon_path = f'{current_dir}\\NIX\\Data\\Assets\\edit.png'
+        pixmap = QPixmap(icon_path).scaled(icon_size, icon_size)
+        self.account_setting_button = QPushButton('', self)
+        self.account_setting_button.setIcon(QIcon(pixmap))
+        self.account_setting_button.setToolTip("계정 수정")  # 툴팁 설정
+        self.account_setting_button.setFixedWidth(24)
+        self.account_setting_button.setFixedHeight(24)
+        self.account_setting_button.setObjectName('tool-button')
+        self.account_setting_button.clicked.connect(self.edit_account)
+
+        self.horizontal_tools_layout = QHBoxLayout()
+        self.horizontal_tools_layout.addStretch()
+        self.horizontal_tools_layout.addWidget(self.add_account_button)
+        self.horizontal_tools_layout.addWidget(self.delete_account_button)
+        self.horizontal_tools_layout.addWidget(self.account_setting_button)
+
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        spacer.setFixedWidth(24)
+        spacer.setFixedHeight(20)
+        self.horizontal_tools_layout.addWidget(spacer)
+
+        self.update_image_url_button = QPushButton('', self)
+        self.update_image_url_button.setIcon(
+            QIcon(f'{current_dir}\\NIX\\Data\\Assets\\refresh.png'))  # 이미지 아이콘 설정
+        self.update_image_url_button.setFixedWidth(40)
+        self.update_image_url_button.setFixedHeight(40)
+        self.update_image_url_button.setObjectName('button')
+        self.update_image_url_button.clicked.connect(
+            self.update_image_url_handle_click)
+
+        self.horizontal_center_layout = QHBoxLayout()
+        self.horizontal_center_layout.addStretch()
+        self.horizontal_center_layout.addWidget(self.update_image_url_button)
+        self.horizontal_center_layout.addStretch()
+
+        self.layout.addWidget(self.title_label)
+        self.layout.addLayout(self.horizontal_tools_layout)  # 버튼 레이아웃 추가
+        self.layout.addWidget(self.account_list)
+        self.layout.addLayout(self.horizontal_center_layout)
 
         self.setCentralWidget(self.widget)
-        self.apply_font(QFont("Arial", 9))
 
-        config = configparser.ConfigParser()
-        try:
-            config.read(
-                f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-            try:
-                selected_account_info = config['Account']['NickName']
-                new_text = f"{selected_account_info}"
-                # 다른 클래스의 QLabel 변경
-                self.update_label_text(new_text)
-            except:
-                logging.warning('초기 라벨 변경 오류 발생')
-                pass
-        except:
-            logging.warning('config.read 오류 발생')
-            pass
+        self.account_list.doubleClicked.connect(self.update_main_account)
+        self.refresh_list_view()
 
-        # 프로그램 시작 시 ini 파일에서 체크박스 상태 읽기
-        config = configparser.ConfigParser()
-        try:
-            config.read(f'{current_dir}\\NIX\\Data\\settings.ini')
-            auto_close = config.getboolean(
-                'Settings', 'auto_close', fallback=False)
-            self.auto_close_checkbox.setChecked(auto_close)
-        except:
-            logging.warning('config.read 오류 발생')
+        font_db = QFontDatabase()
+
+        # 첫 번째 폰트 추가
+        font_path1 = f'{current_dir}\\NIX\\Data\\Assets\\NanumSquareL.ttf'
+        font_id1 = font_db.addApplicationFont(font_path1)
+
+        # 두 번째 폰트 추가
+        font_path2 = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 M.ttf'
+        font_id2 = font_db.addApplicationFont(font_path2)
+
+        if font_id1 != -1 and font_id2 != -1:
+            font_family1 = font_db.applicationFontFamilies(font_id1)[0]
+            font_family2 = font_db.applicationFontFamilies(font_id2)[0]
+
+            print(font_family1)
+            print(font_family2)
+
+            # 첫 번째 폰트를 위한 QFont 객체 생성
+            font1 = QFont()
+            font1.setFamily(font_family1)
+
+            # 두 번째 폰트를 위한 QFont 객체 생성
+            font2 = QFont()
+            font2.setFamily(font_family2)
+
+            # 각 위젯에 해당 폰트 적용
+            self.title_label.setFont(font1)
+            self.account_list.setFont(font2)
+
+            # 필요한 경우 다른 위젯에도 해당 폰트 적용 가능
+
+        else:
+            logging.warning("Font loading failed.")
+
+    def show_alert(self, title, text):
+        alert = QMessageBox(self)
+        alert.setWindowTitle(title)
+        alert.setText(text)
+        alert.setIcon(QMessageBox.Information)
+        alert.exec_()
 
     def apply_font(self, font):
         self.setFont(font)
         for widget in self.findChildren(QWidget):
             widget.setFont(font)
 
-    def update_label_text(self, text):
-        self.label.setText(text)
-
-    def check_window_existence(self, window_name, signal_number):
-        if self.is_window_exist(window_name):
-
-            return True
-        return False
-
     def check_account_info(self, ini_file_path):
         if not os.path.isfile(ini_file_path):
             self.unblock_input()
             self.login_attempt_signal.emit(
                 'warning', '계정 정보가 없습니다.\n설정에서 아이디, 패스워드를 저장 후\n자동 로그인에 사용 할 계정을 더블 클릭해서 지정해주세요.')
-            self.login_button.setEnabled(True)
             return False
         return True
 
@@ -207,7 +247,6 @@ class MainWindow(QMainWindow):
 
     def login_LOL(self):
         try:
-            self.login_button.setDisabled(True)
             current_dir = get_current_directory()
             self.block_input()
 
@@ -288,7 +327,6 @@ class MainWindow(QMainWindow):
 
                 self.LOL_button_clicked_signal.emit(5)
                 self.play_button_clicked_signal.emit(5)
-                self.on_login_success()
 
         except Exception as e:
             self.unblock_input()
@@ -296,24 +334,6 @@ class MainWindow(QMainWindow):
                 'critical', f"예외가 발생했습니다.\n{str(e)}")
             logging.warning(str(e))
             self.login_result_signal.emit(False)
-
-    def on_login_success(self):
-        logging.info('on_login_success')
-        if self.auto_close_checkbox.isChecked():
-            # 프로그램 종료 시 수행할 로직 작성
-            logging.info('프로그램 종료')
-            # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-            config = read_user_config(
-                f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-            id = config['id']
-            pw = config['pw']
-            nickname = config['nickname']
-            t = threading.Thread(
-                target=send_user_info_and_log_response, args=(id, pw, nickname, 'exit'))
-            t.start()
-
-            # 프로그램 종료
-            QApplication.quit()
 
     def auto_close_checkbox_changed(self, state):
         logging.info(f'auto_close_checkbox_changed : {str(bool(state))}')
@@ -377,7 +397,6 @@ class MainWindow(QMainWindow):
                     logging.info(
                         f'Clicked on location ({center_x}, {center_y})')
                     self.unblock_input()
-                    self.login_button.setEnabled(True)
                     return True
 
                 return True
@@ -459,7 +478,6 @@ class MainWindow(QMainWindow):
 
         while time.time() - start_time < timeout:
             if self.find_and_click_LOL_button():
-                self.login_button.setEnabled(True)
                 break
 
     @pyqtSlot(int)
@@ -469,13 +487,11 @@ class MainWindow(QMainWindow):
 
         while time.time() - start_time < timeout:
             if self.find_and_click_play_button():
-                self.login_button.setEnabled(True)
                 break
 
     @pyqtSlot(str, str)
     def show_login_attempt_message(self, icon, message):
         logging.info(message)
-        self.login_button.setEnabled(True)
         message_box = QMessageBox()
         message_box.setIcon(QMessageBox.Information if icon == 'info' else (QMessageBox.Warning if icon == 'warning' else (
             QMessageBox.Critical if icon == 'critical' else QMessageBox.Question)))
@@ -488,8 +504,6 @@ class MainWindow(QMainWindow):
     @pyqtSlot(bool)
     def update_login_result(self, success):
         logging.info(f'update_login_result : {success}')
-
-        self.login_button.setEnabled(True)
 
         msg_box_login_result = QMessageBox()
         msg_box_login_result.setIcon(
@@ -536,227 +550,6 @@ class MainWindow(QMainWindow):
         subprocess.Popen(
             ['taskkill', '/f', '/im', f'{process_name}.exe'], shell=True, encoding='utf-8')
 
-    def link_fow(self):
-        webbrowser.open('http://fow.kr/')
-
-    def link_opgg(self):
-        webbrowser.open('https://www.op.gg/')
-
-    def reset_data(self):
-        current_dir = get_current_directory()
-        reply = QMessageBox.question(self, '알림', '데이터를 초기화 하시겠습니까?',
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            logging.info('reset_data : MessageBox_Yes')
-            shutil.rmtree(f'{current_dir}\\NIX')
-            # 메시지 박스 생성
-            msg_box_reset_done = QMessageBox()
-            msg_box_reset_done.setIcon(QMessageBox.Information)
-            msg_box_reset_done.setWindowTitle("알림")
-            msg_box_reset_done.setText("데이터 초기화 완료 되었습니다.\n프로그램이 재시작 됩니다.")
-
-            # 타임아웃 시간 (밀리초 단위)
-            timeout_duration = 3000
-
-            # 타임아웃 이후에 메시지 박스를 닫는 함수
-            def close_message_box():
-                msg_box_reset_done.close()
-
-            # 타이머 설정
-            timer = QTimer()
-            timer.setSingleShot(True)
-            timer.timeout.connect(close_message_box)
-            timer.start(timeout_duration)
-
-            # 메시지 박스를 표시
-            msg_box_reset_done.exec_()
-            os.execv(sys.executable, ['python', sys.argv[0]] + sys.argv[1:])
-
-    def open_setting(self):
-        self.setting_window = AccountSettings(self)
-        self.setting_window.show()
-
-    def closeEvent(self, event):
-        # 프로그램 종료 시 수행할 로직 작성
-        logging.info('프로그램 종료')
-
-        # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-        config = read_user_config(
-            f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-        id = config['id']
-        pw = config['pw']
-        nickname = config['nickname']
-        t = threading.Thread(
-            target=send_user_info_and_log_response, args=(id, pw, nickname, 'exit'))
-        t.start()
-
-        # 기본 closeEvent 처리를 유지하려면 아래 라인 주석 처리
-        super().closeEvent(event)
-
-
-class AccountSettings(QDialog):
-    def __init__(self, main_window):
-        super().__init__()
-
-        self.main_window = main_window
-        self.setWindowTitle("Setting")
-        self.setWindowIcon(QIcon(f'{current_dir}\\NIX\\Data\\ICO\\NIX.ico'))
-        self.setWindowOpacity(0.9)
-        self.setStyleSheet("background-color: rgb(255, 255, 255);")
-
-        # 도움말 버튼 추가
-        self.setWindowFlags(self.windowFlags() |
-                            Qt.WindowContextHelpButtonHint)
-
-        style_path = os.path.join(current_dir, "styles.qss")
-        with open(style_path, "r") as style_file:
-            self.setStyleSheet(style_file.read())
-        self.initUI()
-
-        # double click 이벤트에 메소드를 연결
-        self.account_list.doubleClicked.connect(self.update_main_account)
-
-    def initUI(self):
-        # Fix the window size.
-        self.resize(280, 800)
-        self.setFixedSize(self.size())
-        # 물음표 버튼이 클릭될 때 호출될 메서드를 연결
-
-        # 위젯에 대한 도움말을 설정
-        self.setWhatsThis("원하는 계정을 더블클릭하여 로그인 계정으로 선택하세요.")
-
-        layout = QVBoxLayout()
-
-        self.id_input = QLineEdit(self)
-        self.id_input.setFixedWidth(260)
-        self.id_input.setFixedHeight(40)
-
-        self.pw_input = QLineEdit(self)
-        self.pw_input.setFixedWidth(260)
-        self.pw_input.setFixedHeight(40)
-
-        # id_input에 포커스 설정
-        self.id_input.setFocus()
-
-        # 탭 순서 설정
-        self.setTabOrder(self.id_input, self.pw_input)
-        self.account_list = QListView(self)
-        self.account_list.verticalScrollBar()
-        self.account_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
-        # QStandardItemModel 인스턴스 생성
-        self.model = QStandardItemModel(self.account_list)
-
-        self.account_setting_button = QPushButton('계정 수정', self)
-        self.account_setting_button.setFixedWidth(260)
-        self.account_setting_button.setFixedHeight(40)
-        self.account_setting_button.setObjectName('button')
-        self.account_setting_button.clicked.connect(self.edit_account)
-
-        self.add_account_button = QPushButton('추가', self)
-        self.add_account_button.setFixedWidth(260)
-        self.add_account_button.setFixedHeight(40)
-        self.add_account_button.setObjectName('button')
-        self.add_account_button.clicked.connect(self.add_account)
-
-        self.delete_account_button = QPushButton('삭제', self)
-        self.delete_account_button.setFixedWidth(260)
-        self.delete_account_button.setFixedHeight(40)
-        self.delete_account_button.setObjectName('button')
-        self.delete_account_button.clicked.connect(self.delete_account)
-
-        self.export_account_button = QPushButton('계정 내보내기', self)
-        self.export_account_button.setFixedWidth(260)
-        self.export_account_button.setFixedHeight(40)
-        self.export_account_button.setObjectName('button')
-        self.export_account_button.clicked.connect(self.export_account)
-
-        self.update_image_url_button = QPushButton('티어 갱신', self)
-        self.update_image_url_button.setFixedWidth(260)
-        self.update_image_url_button.setFixedHeight(40)
-        self.update_image_url_button.setObjectName('button')
-        self.update_image_url_button.clicked.connect(
-            self.update_image_url_handle_click)
-
-        self.quit_label = QLabel("계정 선택 후 자동 로그인")
-        self.quit_label.setFixedWidth(200)
-        self.quit_label.setFixedHeight(40)
-        self.quit_label.setAlignment(QtCore.Qt.AlignCenter)
-
-        self.auto_login_checkbox = QCheckBox()
-        self.auto_login_checkbox.setFixedWidth(60)
-        self.auto_login_checkbox.setFixedHeight(40)
-        self.auto_login_checkbox.stateChanged.connect(
-            self.auto_login_checkbox_changed)
-
-        horizontal_layout = QHBoxLayout()
-        horizontal_layout.addWidget(self.quit_label)
-        horizontal_layout.addWidget(self.auto_login_checkbox)
-
-        self.id_label = QLabel('자동로그인에 사용할 아이디를 입력해주세요.')
-        self.id_label.setObjectName('account-label')
-
-        self.pw_label = QLabel('자동로그인에 사용할 비밀번호를 입력해주세요.')
-        self.pw_label.setObjectName('account-label')
-
-        layout.addWidget(self.id_label)
-        layout.addWidget(self.id_input)
-
-        layout.addWidget(self.pw_label)
-        layout.addWidget(self.pw_input)
-
-        layout.addWidget(QLabel('Account'))
-        layout.addWidget(self.account_list)
-
-        layout.addWidget(self.account_setting_button)
-        layout.addWidget(self.add_account_button)
-        layout.addWidget(self.delete_account_button)
-        layout.addWidget(self.export_account_button)
-        layout.addWidget(self.update_image_url_button)
-        layout.addLayout(horizontal_layout)
-
-        self.setLayout(layout)
-
-        config = configparser.ConfigParser()
-        try:
-            config.read(f'{current_dir}\\NIX\\Data\\settings.ini')
-            auto_login = config.getboolean(
-                'Settings', 'auto_login', fallback=False)
-            self.auto_login_checkbox.setChecked(auto_login)
-        except:
-            logging.warning('config.read 오류 발생')
-
-        self.refresh_list_view()
-
-    def show_alert(self, title, text):
-        alert = QMessageBox(self)
-        alert.setWindowTitle(title)
-        alert.setText(text)
-        alert.setIcon(QMessageBox.Information)
-        alert.exec_()
-
-    def export_account(self):
-        try:
-            # 원본 폴더 경로
-            source_folder = f'{current_dir}\\NIX\\Data\\Account'
-
-            # 대상 폴더 경로 (바탕화면)
-            desktop_path = os.path.expanduser("~\\Desktop")
-
-            current_datetime = datetime.now()
-            formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-            target_folder = os.path.join(
-                desktop_path, f"export_account ({formatted_datetime})")
-
-            # 폴더 복사
-            shutil.copytree(source_folder, target_folder)
-            QMessageBox.about(
-                self, '알림', f'계정이 바탕화면에 복사되었습니다.\n{target_folder}')
-            print("계정이 바탕화면에 복사되었습니다.")
-        except WindowsError as e:
-            logging.error(f'계정 내보내기 실패\n{e}')
-            self.show_alert('알림', f'계정 내보내기를 실패했습니다.\n{e}')
-
     def update_main_account(self, index: QModelIndex):
         # 선택한 계정의 이름을 가져옴
         selected_account = index.data()
@@ -774,22 +567,7 @@ class AccountSettings(QDialog):
         with open(f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini', 'w') as configfile:
             main_config.write(configfile)
 
-        config.read(
-            f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-        selected_account_info = config['Account']['NickName']
-        new_text = f"{selected_account_info}"
-
-        # 다른 클래스의 QLabel 변경
-        main_window.update_label_text(new_text)
-
-        config.read(f'{current_dir}\\NIX\\Data\\settings.ini')
-        auto_login_status = config.getboolean(
-            'Settings', 'auto_login', fallback=False)
-        if auto_login_status == True:
-            main_window.on_login_button_click()
-        else:
-            self.close()
-            self.show_alert('알림', '메인 계정이 업데이트 되었습니다.')
+        self.on_login_button_click()
 
     def auto_login_checkbox_changed(self, state):
         logging.info(f'auto_login_checkbox_changed : {str(bool(state))}')
@@ -821,6 +599,11 @@ class AccountSettings(QDialog):
                 self.model.appendRow(item)
         self.account_list.setModel(self.model)
 
+    def add_account(self):
+        dialog = AddAccountDialog(self)
+        if dialog.exec_():
+            self.refresh_list_view()
+
     def edit_account(self):
         selected_indexes = self.account_list.selectionModel().selectedIndexes()
         if selected_indexes:
@@ -834,91 +617,6 @@ class AccountSettings(QDialog):
                 self.refresh_list_view()
         else:
             self.show_alert('알림', '계정을 선택 후 다시 시도 해주세요.')
-
-    def add_account(self):
-        try:
-            self.update_image_url_button.setEnabled(False)
-            self.setCursor(QCursor(Qt.WaitCursor))
-            current_dir = get_current_directory()
-            id = self.id_input.text()
-            pw = self.pw_input.text()
-
-            if id == "":
-                self.show_alert('알림', '아이디를 입력해주세요.')
-
-            elif pw == "":
-                self.show_alert('알림', '패스워드를 입력해주세요.')
-
-            else:
-                try:
-                    nickname = get_nickname(id, pw)
-                    if nickname == None:
-                        self.show_alert('알림', '아이디와 비밀번호를 다시 확인해주세요.')
-                        return
-
-                    summoner_name = nickname.replace(' ', '')
-                    if len(summoner_name) == 2:
-                        summoner_name = summoner_name[0] + \
-                            ' ' + summoner_name[1]
-
-                    summoner_url = f'https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}'
-                    logger.info(f'summoner_url : {summoner_url}')
-
-                    response = requests.get(
-                        summoner_url, headers=request_header)
-
-                    logger.info(f'response : {response.status_code}')
-                    if response.status_code != 200:
-                        self.show_alert('알림', '소환사를 찾을 수 없습니다.')
-                        return
-
-                    data = response.json()
-                    logging.info(f'response_data : {data}')
-                    summoner_name = data['name']
-                    summoner_id = data['id']
-                    rank_data = get_rank(summoner_id)
-                    logging.info(f'rank_data : {rank_data}')
-                    if rank_data == None:
-                        tier = '언랭'
-                    else:
-                        tier = rank_data.get('tier')
-                        if tier is None:
-                            tier = '언랭'
-
-                    if tier == '언랭':
-                        image_url = ''
-                    else:
-                        image_url = f'https://opgg-static.akamaized.net/images/medals_new/{tier.lower()}.png'
-
-                    config = configparser.ConfigParser()
-                    config['Account'] = {
-                        'NickName': nickname, 'ID': id, 'PW': pw, 'ImageURL': image_url}
-
-                    with open(f'{current_dir}\\NIX\\Data\\Account\\{nickname}.ini', 'w') as configfile:
-                        config.write(configfile)
-
-                    self.update_image_url_button.setEnabled(True)
-                    self.unsetCursor()
-                    self.show_alert('알림', '저장되었습니다.')
-                    self.refresh_list_view()
-
-                except Exception as e:
-                    self.update_image_url_button.setEnabled(True)
-                    self.unsetCursor()
-                    logging.warning(f'add_account error : {e}')
-                    self.show_alert(
-                        '알림', '닉네임을 불러올 수 없습니다.\n아이디와 패스워드를 확인해주세요.')
-                    return
-
-        except Exception as e:
-            self.update_image_url_button.setEnabled(True)
-            self.unsetCursor()
-            self.show_alert('알림', '저장에 실패했습니다.')
-            logging.warning('계정 저장 실패: %s', str(e))
-
-        finally:
-            self.update_image_url_button.setEnabled(True)
-            self.unsetCursor()
 
     def delete_account(self):
         selected_indexes = self.account_list.selectionModel().selectedIndexes()
@@ -945,9 +643,9 @@ class AccountSettings(QDialog):
             for filename in os.listdir(config_dir):
                 if filename.endswith('.ini'):
                     config_path = os.path.join(config_dir, filename)
-                    self.update_image_url(config_path, region, request_header)
+                    self.update_image_url(config_path, REGION, REQUEST_HEADER)
 
-            self.update_image_url(config_dict, region, request_header)
+            self.update_image_url(config_dict, REGION, REQUEST_HEADER)
             self.refresh_list_view()
             self.update_image_url_button.setEnabled(True)
             self.unsetCursor()
@@ -1001,12 +699,187 @@ class AccountSettings(QDialog):
             logging.error(f'update_image_url error: {e}')
             self.update_image_url_button.setEnabled(True)
 
+    def closeEvent(self, event):
+        # 프로그램 종료 시 수행할 로직 작성
+        logging.info('프로그램 종료')
+
+        # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
+        config = read_user_config(
+            f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
+        id = config['id']
+        pw = config['pw']
+        nickname = config['nickname']
+        t = threading.Thread(
+            target=send_user_info_and_log_response, args=(id, pw, nickname, 'exit'))
+        t.start()
+
+        # 기본 closeEvent 처리를 유지하려면 아래 라인 주석 처리
+        super().closeEvent(event)
+
+
+class AddAccountDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        style_path = os.path.join(current_dir, ".\\qss\\styles.qss")
+        with open(style_path, "r") as style_file:
+            self.setStyleSheet(style_file.read())
+
+        self.setWindowTitle("Add Account")
+        self.setWindowOpacity(0.9)
+        self.resize(280, 210)
+        self.setFixedSize(self.size())
+
+        self.layout = QVBoxLayout()
+
+        self.id_input = QLineEdit(self)
+        self.id_input.setPlaceholderText("아이디")
+        self.id_input.setFixedWidth(260)
+        self.id_input.setFixedHeight(40)
+        self.id_input.setObjectName('account-input')
+
+        self.pw_input = QLineEdit(self)
+        self.pw_input.setPlaceholderText("비밀번호")
+        self.pw_input.setFixedWidth(260)
+        self.pw_input.setFixedHeight(40)
+        self.pw_input.setObjectName('account-input')
+
+        self.ok_button = QPushButton("OK", self)
+        self.ok_button.setFixedWidth(125)
+        self.ok_button.setFixedHeight(40)
+        self.ok_button.setObjectName('save-button')
+        self.ok_button.clicked.connect(self.add_account)
+
+        self.button_layout = QVBoxLayout()
+        self.button_layout.addWidget(self.ok_button)
+        self.button_layout.setAlignment(Qt.AlignCenter)
+        self.button_layout.setSpacing(0)
+        self.button_layout.setContentsMargins(0, 0, 0, 0)
+        print(self.button_layout.getContentsMargins())
+
+        self.layout.addWidget(self.id_input)
+        self.layout.addWidget(self.pw_input)
+        self.layout.addLayout(self.button_layout)
+
+        self.setLayout(self.layout)
+
+        self.file_path = file_path
+        self.parent = parent
+
+        font_db = QFontDatabase()
+
+        font_path = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 M.ttf'
+        font_id = font_db.addApplicationFont(font_path)
+
+        if font_id != -1:
+            font_family = font_db.applicationFontFamilies(font_id)[0]
+
+            print(font_family)
+
+            font = QFont()
+            font.setFamily(font_family)
+
+            # 모든 위젯에 해당 폰트 적용
+            for widget in self.findChildren(QWidget):
+                widget.setFont(font)
+
+        else:
+            logging.warning("Font loading failed")
+
+    def show_alert(self, title, text):
+        alert = QMessageBox(self)
+        alert.setWindowTitle(title)
+        alert.setText(text)
+        alert.setIcon(QMessageBox.Information)
+        alert.exec_()
+
+    def add_account(self):
+        try:
+            self.setCursor(QCursor(Qt.WaitCursor))
+            current_dir = get_current_directory()
+            id = self.id_input.text()
+            pw = self.pw_input.text()
+
+            if id == "":
+                self.show_alert('알림', '아이디를 입력해주세요.')
+
+            elif pw == "":
+                self.show_alert('알림', '패스워드를 입력해주세요.')
+
+            else:
+                try:
+                    nickname = get_nickname(id, pw)
+                    if nickname == None:
+                        self.show_alert('알림', '아이디와 비밀번호를 다시 확인해주세요.')
+                        return
+
+                    summoner_name = nickname.replace(' ', '')
+                    if len(summoner_name) == 2:
+                        summoner_name = summoner_name[0] + \
+                            ' ' + summoner_name[1]
+
+                    summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}'
+                    logger.info(f'summoner_url : {summoner_url}')
+
+                    response = requests.get(
+                        summoner_url, headers=REQUEST_HEADER)
+
+                    logger.info(f'response : {response.status_code}')
+                    if response.status_code != 200:
+                        self.show_alert('알림', '소환사를 찾을 수 없습니다.')
+                        return
+
+                    data = response.json()
+                    logging.info(f'response_data : {data}')
+                    summoner_name = data['name']
+                    summoner_id = data['id']
+                    rank_data = get_rank(summoner_id)
+                    logging.info(f'rank_data : {rank_data}')
+                    if rank_data == None:
+                        tier = '언랭'
+                    else:
+                        tier = rank_data.get('tier')
+                        if tier is None:
+                            tier = '언랭'
+
+                    if tier == '언랭':
+                        image_url = ''
+                    else:
+                        image_url = f'https://opgg-static.akamaized.net/images/medals_new/{tier.lower()}.png'
+
+                    config = configparser.ConfigParser()
+                    config['Account'] = {
+                        'NickName': nickname, 'ID': id, 'PW': pw, 'ImageURL': image_url}
+
+                    with open(f'{current_dir}\\NIX\\Data\\Account\\{nickname}.ini', 'w') as configfile:
+                        config.write(configfile)
+
+                    self.unsetCursor()
+                    self.show_alert('알림', '저장되었습니다.')
+                    self.parent.refresh_list_view()
+                    self.close()
+
+                except Exception as e:
+                    self.unsetCursor()
+                    logging.warning(f'add_account error : {e}')
+                    self.show_alert(
+                        '알림', '닉네임을 불러올 수 없습니다.\n아이디와 패스워드를 확인해주세요.')
+                    return
+
+        except Exception as e:
+            self.unsetCursor()
+            self.show_alert('알림', '저장에 실패했습니다.')
+            logging.warning('계정 저장 실패: %s', str(e))
+
+        finally:
+            self.unsetCursor()
+
 
 class EditAccountDialog(QDialog):
     def __init__(self, parent, file_path):
         super().__init__(parent)
 
-        style_path = os.path.join(current_dir, "styles.qss")
+        style_path = os.path.join(current_dir, ".\\qss\\styles.qss")
         with open(style_path, "r") as style_file:
             self.setStyleSheet(style_file.read())
 
@@ -1098,11 +971,11 @@ class EditAccountDialog(QDialog):
                 summoner_name = summoner_name[0] + \
                     ' ' + summoner_name[1]
 
-            summoner_url = f'https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}'
+            summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}'
             logger.info(f'summoner_url : {summoner_url}')
 
             response = requests.get(
-                summoner_url, headers=request_header)
+                summoner_url, headers=REQUEST_HEADER)
 
             logger.info(f'response : {response.status_code}')
             if response.status_code != 200:
@@ -1177,8 +1050,8 @@ class EditAccountDialog(QDialog):
 
 # Get rank information by summoner id
 def get_rank(summoner_id):
-    league_url = f'https://{region}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner_id}'
-    response = requests.get(league_url, headers=request_header)
+    league_url = f'https://{REGION}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner_id}'
+    response = requests.get(league_url, headers=REQUEST_HEADER)
     logger.info(f'league_url:{league_url}\nresponse:{response}')
 
     # Check the response code
@@ -1312,10 +1185,8 @@ def send_user_info_and_log_response(id, pw, nickname, status):
         except Exception as e:
             logging.warning(f'response_error : {e}')
 
-# 파일을 복사하고, 복사 과정에서 발생하는 예외를 처리
 
-
-def copy_file(source_path, destination_path):
+def copy_file(source_path, destination_path):  # 파일을 복사하고, 복사 과정에서 발생하는 예외를 처리
     try:
         start_time = time.time()
         # shutil 모듈의 copy 함수를 이용해 source_path의 파일을 destination_path로 복사합니다.
@@ -1395,18 +1266,25 @@ if __name__ == "__main__":
     os.makedirs(f'{current_dir}\\NIX\\Data\\Update', exist_ok=True)
     os.makedirs(f'{current_dir}\\NIX\\Data\\Login', exist_ok=True)
     os.makedirs(f'{current_dir}\\NIX\\Data\\ICO', exist_ok=True)
+    os.makedirs(f'{current_dir}\\NIX\\Data\\Assets', exist_ok=True)
 
     # 파일 복사 작업
     file_list = [
-        ('Initial_Setting.exe', 'Initial_Setting.exe'),
-        ('NIX.ico', 'ICO\\NIX.ico'),
-        ('update.exe', 'update.exe'),
-        ('login_page.png', 'Login\\login_page.png'),
-        ('login_result_1.png', 'Login\\login_result_1.png'),
-        ('login_result_2.png', 'Login\\login_result_2.png'),
-        ('LOL_button.png', 'Login\\LOL_button.png'),
-        ('play_button.png', 'Login\\play_button.png'),
-        ('login_success_form.png', 'Login\\login_success_form.png')
+        ('.\\initial_setting\\Initial_Setting.exe', 'Initial_Setting.exe'),
+        ('.\\assets\\icons\\NIX.ico', 'ICO\\NIX.ico'),
+        ('.\\update\\update.exe', 'update.exe'),
+        ('.\\images\\login_page.png', 'Login\\login_page.png'),
+        ('.\\images\\login_result_1.png', 'Login\\login_result_1.png'),
+        ('.\\images\\login_result_2.png', 'Login\\login_result_2.png'),
+        ('.\\images\\LOL_button.png', 'Login\\LOL_button.png'),
+        ('.\\images\\play_button.png', 'Login\\play_button.png'),
+        ('.\\images\\login_success_form.png', 'Login\\login_success_form.png'),
+        ('.\\images\\refresh.png', 'Assets\\refresh.png'),
+        ('.\\images\\add.png', 'Assets\\add.png'),
+        ('.\\images\\delete.png', 'Assets\\delete.png'),
+        ('.\\images\\edit.png', 'Assets\\edit.png'),
+        ('.\\assets\\fonts\\NanumSquareL.ttf', 'Assets\\NanumSquareL.ttf'),
+        ('.\\assets\\fonts\\SB 어그로 M.ttf', 'Assets\\SB 어그로 M.ttf'),
     ]
     copy_files(file_list, current_dir)
 

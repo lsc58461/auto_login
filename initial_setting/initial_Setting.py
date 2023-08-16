@@ -1,4 +1,4 @@
-#pyinstaller -w --onefile --icon=.\NIX.ico --add-data "loading.gif;." main.py
+# pyinstaller -w --onefile --icon=.\NIX.ico --add-data "..\assets\loading\loading.gif;." main.py
 import os
 import sys
 import shutil
@@ -9,6 +9,7 @@ from PIL import Image, ImageTk
 
 
 config = configparser.ConfigParser()
+
 
 class LoadingWindow:
     def __init__(self, gif_path):
@@ -33,7 +34,7 @@ class LoadingWindow:
 
         self.frames = []
         self.load_gif(gif_path)
-        
+
         self.label = tk.Label(self.window, bg="white")
         self.label.pack()
 
@@ -59,6 +60,7 @@ class LoadingWindow:
     def close(self):
         self.window.destroy()
 
+
 # 롤과 크롬의 실행 파일 이름
 LOL_EXE = "LeagueClient.exe"
 CHROME_EXE = "chrome.exe"
@@ -82,13 +84,14 @@ SEARCH_FOLDERS = [
     "E:\Program Files (x86)"
 ]
 
+
 def search_file(file_name):
     for folder in SEARCH_FOLDERS:
         print(folder)
         for root, dirs, files in os.walk(folder):
             print(root, dirs, files)
             if file_name in files:
-                return os.path.join(root + '\\'+ file_name)
+                return os.path.join(root + '\\' + file_name)
 
     for drive in range(ord('A'), ord('Z')+1):
         drive = chr(drive) + ":\\"
@@ -96,8 +99,9 @@ def search_file(file_name):
         for root, dirs, files in os.walk(drive):
             print(root, dirs, files)
             if file_name in files:
-                return os.path.join(root + '\\'+ file_name)
+                return os.path.join(root + '\\' + file_name)
     return None
+
 
 def get_current_directory():
     if getattr(sys, 'frozen', False):  # pyinstaller로 생성된 실행 파일인 경우
@@ -106,14 +110,16 @@ def get_current_directory():
         current_dir = os.path.dirname(os.path.abspath(__file__))
     return current_dir
 
+
 def save_to_file(file_name, content):
     with open(file_name, 'w') as file:
         file.write(content)
 
+
 def save_path(type, path):
     # 실행 파일이 있는 디렉토리를 기준으로 절대 경로를 얻습니다.
     current_dir = get_current_directory()
-    
+
     if type == 'LOL':
         file_name = 'Local_LOL.nix'
         content = f'[LOL]\nPath={path}'
@@ -123,6 +129,7 @@ def save_path(type, path):
 
     save_to_file(os.path.join(current_dir, file_name), content)
 
+
 def search_and_display_path_lol():
     lol_result = search_file(LOL_EXE)
 
@@ -131,6 +138,7 @@ def search_and_display_path_lol():
         save_path('LOL', lol_result)
     else:
         print('롤 경로를 찾을 수 없습니다.')
+
 
 def search_and_display_path_chrome():
     chrome_result = search_file(CHROME_EXE)
@@ -144,24 +152,24 @@ def search_and_display_path_chrome():
 
 def main():
     current_dir = get_current_directory()
-    
+
     ini_file_path = os.path.join(get_current_directory(), 'Local_Setting.nix')
-    
+
     try:
         # 'init' 값이 1이면 프로그램 종료
         config.read(ini_file_path)
         initial = config['Initial']['init']
         if initial == '1':
             return
-    except:   
+    except:
         pass
-    
+
     # 현재 디렉토리에 'Local_Setting.nix' 파일 생성
     config['Initial'] = {}
     config['Initial']['init'] = '1'
     with open(ini_file_path, 'w') as configfile:
         config.write(configfile)
-    
+
     def get_file_path(filename):
         if hasattr(sys, '_MEIPASS'):
             # 실행 파일 내부에서 실행 중인 경우
@@ -207,9 +215,10 @@ def main():
         # 예외가 발생하면 로그 파일에 에러 메시지를 기록합니다.
         current_dir = get_current_directory()
         log_file = os.path.join(current_dir, 'error.log')
-        
+
         with open(log_file, 'w') as f:
             f.write(f"Error: {str(e)}")
+
 
 if __name__ == "__main__":
     main()

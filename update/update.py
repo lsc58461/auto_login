@@ -1,4 +1,4 @@
-#pyinstaller -w --onefile --icon=.\NIX.ico update.py
+# pyinstaller -w --onefile --icon=..\assets\icons\NIX.ico update.py
 from PIL import Image, ImageTk
 from ftplib import FTP
 import sys
@@ -9,6 +9,7 @@ import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
 import subprocess
 import logging
+
 
 class LoadingWindow:
     def __init__(self):
@@ -36,11 +37,13 @@ class LoadingWindow:
         self.frame = ttk.Frame(self.window)
         self.frame.pack(pady=20)
 
-        self.progress = ttk.Progressbar(self.frame, length=200, mode='determinate')
+        self.progress = ttk.Progressbar(
+            self.frame, length=200, mode='determinate')
         self.progress.pack(side="left")
 
         self.percentage_var = tk.StringVar()
-        self.percentage_label = tk.Label(self.frame, textvariable=self.percentage_var, bg="black")
+        self.percentage_label = tk.Label(
+            self.frame, textvariable=self.percentage_var, bg="black")
         self.percentage_label.config(font=("Arial", 10), fg="white")
         self.percentage_label.pack(side="left")
 
@@ -61,8 +64,10 @@ class LoadingWindow:
     def close(self):
         self.window.destroy()
 
+
 def download_file(loading_window, progress):
-    ftp = FTP('dbserver.dothome.co.kr')   # replace with your FTP server details
+    # replace with your FTP server details
+    ftp = FTP('dbserver.dothome.co.kr')
     ftp.login('dbserver', 'dlswb4fkd!')
 
     # 접속 성공 후 파일 목록 가져오기
@@ -106,6 +111,7 @@ def download_file(loading_window, progress):
     ftp.quit()
     localfile.close()
 
+
 def get_current_directory():
     if getattr(sys, 'frozen', False):  # pyinstaller로 생성된 실행 파일인 경우
         current_dir = os.path.dirname(sys.executable)
@@ -131,7 +137,8 @@ def main():
             logging.info(f'업데이트 완료')
 
             # 업데이트된 파일 실행
-            target_dir = os.path.dirname(os.path.dirname(get_current_directory()))
+            target_dir = os.path.dirname(
+                os.path.dirname(get_current_directory()))
             logging.info(f'업데이드 된 파일 위치 : {target_dir}')
             update_file_path = target_dir + "\\Auto_Login.exe"  # 실행할 파일 경로
             CREATE_NEW_PROCESS_GROUP = 0x00000200
@@ -139,7 +146,7 @@ def main():
             subprocess.Popen(update_file_path,
                              stdin=None, stdout=None, stderr=None, shell=True,
                              creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
-                            )
+                             )
             logging.info('update_file 실행')
             loading_window.close()
             logging.info('loading_window 종료')
@@ -151,7 +158,8 @@ def main():
         progress = 0
 
         # 스레드 생성
-        download_thread = threading.Thread(target=lambda: download_file(loading_window, progress))
+        download_thread = threading.Thread(
+            target=lambda: download_file(loading_window, progress))
 
         # 스레드 시작
         download_thread.start()
@@ -179,7 +187,8 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
 
     # log 출력 형식
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # log 출력
     stream_handler = logging.StreamHandler()
@@ -190,6 +199,5 @@ if __name__ == "__main__":
     file_handler = logging.FileHandler('update.log')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-
 
     main()
