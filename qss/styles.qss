@@ -1,5 +1,11 @@
 * {
-    background-color: #191b2d;
+    border-radius: 20px;
+    background-color: #212335;
+}
+
+QMessageBox {
+    font-size: 18px;
+    background-color: #3a324d;
 }
 
 AddAccountDialog {
@@ -7,20 +13,25 @@ AddAccountDialog {
 }
 
 EditAccountDialog {
+    border-radius: 20px;
     background-color: #3a324d;
+}
+
+CustomAlert {
+    background-color: #2c263b;
 }
 
 QLabel {
     background-color: transparent;
-    color: #fff;
-    font-weight: bold;
+    color: #d7d4dd;
+    font-size: 18px;
     padding: 5px;
 }
 
 #title-label {
-    color: #8d7cb3;
+    color: #ffffff;
     padding-top: 5px;
-    font-size: 22px;
+    font-size: 38px;
 }
 
 #account-label {
@@ -33,6 +44,51 @@ QLabel {
     color: gray;
     padding: 0;
     font-size: 12px;
+}
+
+#status-bar-button-minimized {
+    border-radius: 5px;
+    background-color: #00cd4e;
+}
+
+#status-bar-button-maximized {
+    border-radius: 5px;
+    background-color: #ffbb39;
+}
+
+#status-bar-button-close {
+    border-radius: 5px;
+    background-color: #ff5d5b;
+}
+
+#status-bar-button-minimized:hover {
+    border-radius: 5px;
+    background-color: #b200cd4f;
+}
+
+#status-bar-button-maximized:hover {
+    border-radius: 5px;
+    background-color: #b6ffba39;
+}
+
+#status-bar-button-close:hover {
+    border-radius: 5px;
+    background-color: #abff5e5b;
+}
+
+#status-bar-button-minimized:pressed {
+    border-radius: 5px;
+    background-color: #ff00ff62;
+}
+
+#status-bar-button-maximized:pressed {
+    border-radius: 5px;
+    background-color: #ffffcc6d;
+}
+
+#status-bar-button-close:pressed {
+    border-radius: 5px;
+    background-color: #abff0400;
 }
 
 QPushButton {
@@ -52,10 +108,16 @@ QPushButton:pressed {
 }
 
 #button {
-    border-radius: 10px;
+    border-radius: 30px;
     background-color: transparent;
-    color: white;
-    font-weight: bold;
+}
+
+#button:hover {
+    background-color: rgba(0,0,0,30);
+}
+
+#button:pressed {
+    background-color: rgba(0,0,0,50);
 }
 
 #save-button {
@@ -127,26 +189,10 @@ QCheckBox::indicator:unchecked {
     color: #d7d4dd;
 }
 
-QLineEdit {
-    border: 2px solid rgb(58, 150, 255);
-    border-radius: 10px;
-    padding: 5px;
-    background-color: white;
-    color: black;
-}
-
-QLineEdit:hover {
-    border-color: rgb(58, 100, 255);
-}
-
-QLineEdit:focus {
-    border-color: rgb(58, 200, 255);
-}
-
 QListView {
     margin: 5px 30px 0 30px;
     color: #fff;
-    font-size: 20px;
+    font-size: 19px;
     border: none;
     background-color: #605677;
     border-radius: 29px;
@@ -163,26 +209,26 @@ QListView::item:selected {
 
 QScrollBar:vertical { 
     border: none;
-    background: white;
+    background: #605677;
     width: 10px;
     margin: 0px;
 }
 
 QScrollBar::handle:vertical {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-    stop: 0 rgb(58, 150, 255),
-    stop: 0.5 rgb(58, 150, 255),
-    stop: 1 rgb(58, 150, 255));
+    stop: 0 #212335,
+    stop: 0.5 #212335,
+    stop: 1 #212335);
     min-height: 20px;
     border-radius: 5px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background: rgb(58, 100, 255);
+    background: #17182c;
 }
 
 QScrollBar::handle:vertical:pressed {
-    background: rgb(58, 200, 255);
+    background: #2c2e3f;
 }
 
 QScrollBar::add-line:vertical {
@@ -197,4 +243,8 @@ QScrollBar::sub-line:vertical {
     height: 0px;
     subcontrol-position: top;
     subcontrol-origin: margin;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: #605677;
 }

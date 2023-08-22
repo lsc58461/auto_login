@@ -8,7 +8,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('NIX.ico', '.'), ('Initial_Setting.exe', '.'), ('update.exe', '.'), ('login_page.png', '.'), ('login_result_1.png', '.'), ('login_result_2.png', '.'), ('LOL_button.png', '.'), ('play_button.png', '.')],
+    datas=[('.\\\\qss\\\\styles.qss', '.\\\\qss'), ('.\\\\assets\\\\icons\\\\NIX.ico', '.\\\\assets\\\\icons'), ('.\\\\initial_setting\\\\Initial_Setting.exe', '.\\\\initial_setting'), ('.\\\\update\\\\update.exe', '.\\\\update'), ('.\\\\images\\\\login_success_form.png', '.\\\\images'), ('.\\\\images\\\\login_page.png', '.\\\\images'), ('.\\\\images\\\\login_result_1.png', '.\\\\images'), ('.\\\\images\\\\login_result_2.png', '.\\\\images'), ('.\\\\images\\\\LOL_button.png', '.\\\\images'), ('.\\\\images\\\\play_button.png', '.\\\\images'), ('.\\\\images\\\\refresh.png', '.\\\\images'), ('.\\\\images\\\\add.png', '.\\\\images'), ('.\\\\images\\\\delete.png', '.\\\\images'), ('.\\\\images\\\\edit.png', '.\\\\images'), ('.\\\\images\\\\alert.png', '.\\\\images'), ('.\\\\assets\\\\fonts\\\\NanumSquareL.ttf', '.\\\\assets\\\\fonts'), ('.\\\\assets\\\\fonts\\\\SB 어그로 L.ttf', '.\\\\assets\\\\fonts'), ('.\\\\assets\\\\fonts\\\\SB 어그로 M.ttf', '.\\\\assets\\\\fonts'), ('.\\\\assets\\\\fonts\\\\EF_watermelonSalad.ttf', '.\\\\assets\\\\fonts'), ('.\\\\sounds\\\\alert.wav', '.\\\\sounds')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -42,5 +42,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     uac_admin=True,
-    icon=['NIX.ico'],
+    icon=['assets\\icons\\NIX.ico'],
 )

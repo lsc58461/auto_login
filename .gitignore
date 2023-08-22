@@ -1,8 +1,8 @@
 *.spec
-test.py
 *.log
 Auto_Login.exe
 nix/
 dist/
 build/
+test/
 KEY.json

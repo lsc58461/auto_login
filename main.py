@@ -1,9 +1,33 @@
-# pyinstaller -w --uac-admin --onefile --icon=.\assets\icons\NIX.ico --add-data "NIX.ico;." --add-data ".\initial_setting\Initial_Setting.exe;." --add-data ".\update\update.exe;." --add-data ".\images\login_success_form.png;." --add-data ".\images\login_page.png;." --add-data ".\images\login_result_1.png;." --add-data ".\images\login_result_2.png;." --add-data ".\images\LOL_button.png;." --add-data ".\images\play_button.png;."--name=Auto_Login main.py
+'''
+pyinstaller -w --uac-admin --onefile --icon=.\\assets\\icons\\NIX.ico `
+--add-data ".\\qss\\styles.qss;.\\qss" `
+--add-data ".\\assets\\icons\\NIX.ico;.\\assets\\icons" `
+--add-data ".\\initial_setting\\Initial_Setting.exe;.\\initial_setting" `
+--add-data ".\\update\\update.exe;.\\update" `
+--add-data ".\\images\\login_success_form.png;.\\images" `
+--add-data ".\\images\\login_page.png;.\\images" `
+--add-data ".\\images\\login_result_1.png;.\\images" `
+--add-data ".\\images\\login_result_2.png;.\\images" `
+--add-data ".\\images\\LOL_button.png;.\\images" `
+--add-data ".\\images\\play_button.png;.\\images" `
+--add-data ".\\images\\refresh.png;.\\images" `
+--add-data ".\\images\\add.png;.\\images" `
+--add-data ".\\images\\delete.png;.\\images" `
+--add-data ".\\images\\edit.png;.\\images" `
+--add-data ".\\images\\alert.png;.\\images" `
+--add-data ".\\assets\\fonts\\NanumSquareL.ttf;.\\assets\\fonts" `
+--add-data ".\\assets\\fonts\\SB 어그로 L.ttf;.\\assets\\fonts" `
+--add-data ".\\assets\\fonts\\SB 어그로 M.ttf;.\\assets\\fonts" `
+--add-data ".\\assets\\fonts\\EF_watermelonSalad.ttf;.\\assets\\fonts" `
+--add-data ".\\sounds\\alert.wav;.\\sounds" `
+--name=Auto_Login main.py
+'''
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QGraphicsDropShadowEffect, QSizePolicy, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon, QPixmap, QCursor, QColor, QFontDatabase
-from PyQt5.QtCore import Qt, QModelIndex, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QModelIndex, QTimer, pyqtSignal, pyqtSlot, QSize
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtMultimedia import QSound
 
 import os
 import sys
@@ -17,7 +41,7 @@ import win32gui
 import requests
 import webbrowser
 import subprocess
-import urllib.parse
+from urllib.parse import quote, urlencode
 import configparser
 import pyautogui
 import pyperclip
@@ -29,12 +53,11 @@ import pygetwindow as gw
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # Riot API Key
-API_KEY = ''
+API_KEY = 'apikey'
 
 REGION = 'kr'
 
@@ -46,7 +69,7 @@ REQUEST_HEADER = {
     "X-Riot-Token": API_KEY
 }
 
-ver = '4.0.0'
+ver = '4.0.1'
 
 
 class MainWindow(QMainWindow):
@@ -58,26 +81,24 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
+        style_path = os.path.join(current_dir, ".\\NIX\\Data\\styles.qss")
+        with open(style_path, "r") as style_file:
+            self.setStyleSheet(style_file.read())
+
         # This line will hide the maximize button
-        self.setWindowFlags(
-            QtCore.Qt.Window | QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowCloseButtonHint)
 
         self.setWindowTitle(ver)
-        self.resize(540, 670)
+        self.resize(540, 730)
 
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
         # Fix the window size.
         self.setFixedSize(self.size())
 
-        self.setStyleSheet("background-color: #191b2d;")
-        self.setWindowOpacity(0.9)
         self.setWindowIcon(QIcon(f'{current_dir}\\NIX\\Data\\ICO\\NIX.ico'))
 
         self.widget = QWidget()
         self.layout = QVBoxLayout(self.widget)
-
-        style_path = os.path.join(current_dir, ".\\qss\\styles.qss")
-        with open(style_path, "r") as style_file:
-            self.setStyleSheet(style_file.read())
 
         # Signal을 slot에 연결
         self.login_attempt_signal.connect(self.show_login_attempt_message)
@@ -87,30 +108,28 @@ class MainWindow(QMainWindow):
         self.play_button_clicked_signal.connect(
             self.try_click_play_button_until_timeout)
 
-        self.id_input = QLineEdit(self)
-        self.id_input.setFixedWidth(260)
-        self.id_input.setFixedHeight(40)
+        self.title_bar = CustomTitleBar(self)
+        self.title_bar.setObjectName('tool-button')
+        self.layout.addWidget(self.title_bar)
 
-        self.pw_input = QLineEdit(self)
-        self.pw_input.setFixedWidth(260)
-        self.pw_input.setFixedHeight(40)
-
-        # id_input에 포커스 설정
-        self.id_input.setFocus()
-
-        self.title_label = QLabel("ACCOUNT")
+        self.title_label = QLabel("apple")
         self.title_label.setObjectName('title-label')
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.title_label_shadow = QGraphicsDropShadowEffect(self)
+        self.title_label_shadow.setBlurRadius(99)
+        self.title_label_shadow.setColor(QColor(255, 255, 255))
+        self.title_label_shadow.setOffset(0)
+        self.title_label.setGraphicsEffect(
+            self.title_label_shadow)
 
         # 탭 순서 설정
-        self.setTabOrder(self.id_input, self.pw_input)
         self.account_list = QListView(self)
         self.account_list.verticalScrollBar()
         self.account_list.setFixedHeight(500)
         self.account_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.account_list_shadow = QGraphicsDropShadowEffect(self)
-        self.account_list_shadow.setBlurRadius(15)
-        self.account_list_shadow.setColor(QColor(0, 0, 0))
+        self.account_list_shadow.setBlurRadius(99)
+        self.account_list_shadow.setColor(QColor(255, 255, 255, 10))
         self.account_list_shadow.setOffset(0)
         self.account_list.setGraphicsEffect(
             self.account_list_shadow)
@@ -131,7 +150,7 @@ class MainWindow(QMainWindow):
         self.add_account_button.clicked.connect(self.add_account)
         self.add_account_button_shadow = QGraphicsDropShadowEffect(self)
         self.add_account_button_shadow.setBlurRadius(15)
-        self.add_account_button_shadow.setColor(QColor(0, 0, 0))
+        self.add_account_button_shadow.setColor(QColor(0, 0, 0, 30))
         self.add_account_button_shadow.setOffset(0)
         self.add_account_button.setGraphicsEffect(
             self.add_account_button_shadow)
@@ -148,7 +167,7 @@ class MainWindow(QMainWindow):
         self.delete_account_button.clicked.connect(self.delete_account)
         self.delete_account_button_shadow = QGraphicsDropShadowEffect(self)
         self.delete_account_button_shadow.setBlurRadius(15)
-        self.delete_account_button_shadow.setColor(QColor(0, 0, 0))
+        self.delete_account_button_shadow.setColor(QColor(0, 0, 0, 30))
         self.delete_account_button_shadow.setOffset(0)
         self.delete_account_button.setGraphicsEffect(
             self.delete_account_button_shadow)
@@ -165,7 +184,7 @@ class MainWindow(QMainWindow):
         self.account_setting_button.clicked.connect(self.edit_account)
         self.account_setting_button_shadow = QGraphicsDropShadowEffect(self)
         self.account_setting_button_shadow.setBlurRadius(15)
-        self.account_setting_button_shadow.setColor(QColor(0, 0, 0))
+        self.account_setting_button_shadow.setColor(QColor(0, 0, 0, 30))
         self.account_setting_button_shadow.setOffset(0)
         self.account_setting_button.setGraphicsEffect(
             self.account_setting_button_shadow)
@@ -185,8 +204,9 @@ class MainWindow(QMainWindow):
         self.update_image_url_button = QPushButton('', self)
         self.update_image_url_button.setIcon(
             QIcon(f'{current_dir}\\NIX\\Data\\Assets\\refresh.png'))  # 이미지 아이콘 설정
-        self.update_image_url_button.setFixedWidth(40)
-        self.update_image_url_button.setFixedHeight(40)
+        self.update_image_url_button.setIconSize(QSize(30, 30))
+        self.update_image_url_button.setFixedSize(60, 60)
+        self.update_image_url_button.setToolTip('티어 갱신')
         self.update_image_url_button.setObjectName('button')
         self.update_image_url_button.clicked.connect(
             self.update_image_url_handle_click)
@@ -217,14 +237,21 @@ class MainWindow(QMainWindow):
         SB_Aggro_Medium = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 M.ttf'
         SB_Aggro_Medium_id = font_db.addApplicationFont(SB_Aggro_Medium)
 
-        if NanumSquare_Light_id != -1 and SB_Aggro_Medium_id != -1:
+        # 두 번째 폰트 추가
+        EF_watermelonSalad = f'{current_dir}\\NIX\\Data\\Assets\\EF_watermelonSalad.ttf'
+        EF_watermelonSalad_id = font_db.addApplicationFont(EF_watermelonSalad)
+
+        if NanumSquare_Light_id != -1 and SB_Aggro_Medium_id != -1 and EF_watermelonSalad_id != -1:
             NanumSquare_Light_font_family = font_db.applicationFontFamilies(
                 NanumSquare_Light_id)[0]
             SB_Aggro_Medium_font_family = font_db.applicationFontFamilies(SB_Aggro_Medium_id)[
                 0]
+            EF_watermelonSalad_font_family = font_db.applicationFontFamilies(EF_watermelonSalad_id)[
+                0]
 
             print(NanumSquare_Light_font_family)
             print(SB_Aggro_Medium_font_family)
+            print(EF_watermelonSalad_font_family)
 
             # 첫 번째 폰트를 위한 QFont 객체 생성
             NanumSquare_Light_font = QFont()
@@ -234,8 +261,11 @@ class MainWindow(QMainWindow):
             SB_Aggro_Medium_font = QFont()
             SB_Aggro_Medium_font.setFamily(SB_Aggro_Medium_font_family)
 
+            EF_watermelonSalad_font = QFont()
+            EF_watermelonSalad_font.setFamily(EF_watermelonSalad_font_family)
+
             # 각 위젯에 해당 폰트 적용
-            self.title_label.setFont(SB_Aggro_Medium_font)
+            self.title_label.setFont(NanumSquare_Light_font)
             self.account_list.setFont(NanumSquare_Light_font)
 
             # 필요한 경우 다른 위젯에도 해당 폰트 적용 가능
@@ -244,11 +274,10 @@ class MainWindow(QMainWindow):
             logging.warning("Font loading failed.")
 
     def show_alert(self, title, text):
-        alert = QMessageBox(self)
-        alert.setWindowTitle(title)
-        alert.setText(text)
-        alert.setIcon(QMessageBox.Information)
-        alert.exec_()
+        icon_path = os.path.join(
+            current_dir, 'NIX', 'Data', 'Assets', 'alert.png')
+        custom_alert = CustomAlert(self, title, text, icon_path)
+        custom_alert.exec_()
 
     def apply_font(self, font):
         self.setFont(font)
@@ -664,6 +693,7 @@ class MainWindow(QMainWindow):
         try:
             self.setCursor(QCursor(Qt.WaitCursor))
             self.update_image_url_button.setEnabled(False)
+
             config_dir = os.path.join(current_dir, 'NIX', 'Data', 'Account')
             config_dict = {}
 
@@ -694,12 +724,27 @@ class MainWindow(QMainWindow):
 
             for section in config.sections():
                 nickname = config[section]['NickName']
-                summoner_url = f'https://{region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{nickname}'
 
-                response = requests.get(summoner_url, headers=request_header)
+                # 로그인
+                login_url = 'http://jeongyun0302.pythonanywhere.com/login'
+                login_data = {'username': 'admin', 'password': 'admin'}
+                login_response = requests.post(login_url, json=login_data)
+                token = login_response.json().get('token')
+
+                # 보호된 엔드포인트에 접근
+                protected_url = 'http://jeongyun0302.pythonanywhere.com/protected'
+                headers = {
+                    'Authorization': f'Bearer {token}',
+                    'nickname': quote(nickname),
+                }
+                response = requests.get(protected_url, headers=headers)
+                
                 if response.status_code == 200:
+                    print('Protected Data:', response.json())
                     data = response.json()
-                    summoner_id = data['id']
+                    summoner_data = data['response']
+                    print(summoner_data)
+                    summoner_id = summoner_data['id']
                     rank_data = get_rank(summoner_id)
 
                     if rank_data is None:
@@ -720,6 +765,8 @@ class MainWindow(QMainWindow):
                     # Save the updated configuration back to the ini file
                     with open(config_path, 'w') as configfile:
                         config.write(configfile)
+                else:
+                    print('Error:', response.status_code, response.text)
 
         except Exception as e:
             self.show_alert('알림', '티어 갱신에 실패했습니다.')
@@ -729,35 +776,43 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         # 프로그램 종료 시 수행할 로직 작성
         logging.info('프로그램 종료')
-
-        # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-        config = read_user_config(
-            f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-        id = config['id']
-        pw = config['pw']
-        nickname = config['nickname']
-        t = threading.Thread(
-            target=send_user_info_and_log_response, args=(id, pw, nickname, 'exit'))
-        t.start()
-
-        # 기본 closeEvent 처리를 유지하려면 아래 라인 주석 처리
-        super().closeEvent(event)
+        try:
+            # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
+            config = read_user_config(
+                f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
+            id = config['id']
+            pw = config['pw']
+            nickname = config['nickname']
+            t = threading.Thread(
+                target=send_user_info_and_log_response, args=(id, pw, nickname, 'exit'))
+            t.start()
+        except Exception as e:
+            logging.warning(f'close event error: {e}')
+        finally:
+            # 기본 closeEvent 처리를 유지하려면 아래 라인 주석 처리
+            super().closeEvent(event)
 
 
 class AddAccountDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
 
-        style_path = os.path.join(current_dir, ".\\qss\\styles.qss")
+        style_path = os.path.join(current_dir, ".\\NIX\\Data\\styles.qss")
         with open(style_path, "r") as style_file:
             self.setStyleSheet(style_file.read())
 
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+
         self.setWindowTitle("Add Account")
-        self.setWindowOpacity(0.9)
-        self.resize(460, 210)
+        self.resize(460, 240)
         self.setFixedSize(self.size())
 
         self.layout = QVBoxLayout()
+
+        self.title_bar = CustomTitleBar(self)
+        self.title_bar.setObjectName('tool-button')
+        self.layout.addWidget(self.title_bar)
 
         self.id_input = QLineEdit(self)
         self.id_input.setPlaceholderText("아이디")
@@ -766,9 +821,9 @@ class AddAccountDialog(QDialog):
         self.id_input.setObjectName('account-input')
 
         self.id_input_shadow = QGraphicsDropShadowEffect(self)
-        self.id_input_shadow.setBlurRadius(20)
-        self.id_input_shadow.setColor(QColor(0, 0, 0))
-        self.id_input_shadow.setOffset(0)
+        self.id_input_shadow.setBlurRadius(10)
+        self.id_input_shadow.setColor(QColor(0, 0, 0, 20))
+        self.id_input_shadow.setOffset(5)
         self.id_input.setGraphicsEffect(self.id_input_shadow)
 
         self.id_input_layout = QVBoxLayout()
@@ -782,9 +837,9 @@ class AddAccountDialog(QDialog):
         self.pw_input.setObjectName('account-input')
 
         self.pw_input_shadow = QGraphicsDropShadowEffect(self)
-        self.pw_input_shadow.setBlurRadius(20)
-        self.pw_input_shadow.setColor(QColor(0, 0, 0))
-        self.pw_input_shadow.setOffset(0)
+        self.pw_input_shadow.setBlurRadius(10)
+        self.pw_input_shadow.setColor(QColor(0, 0, 0, 20))
+        self.pw_input_shadow.setOffset(5)
         self.pw_input.setGraphicsEffect(self.pw_input_shadow)
 
         self.pw_input_layout = QVBoxLayout()
@@ -798,7 +853,7 @@ class AddAccountDialog(QDialog):
         self.ok_button.clicked.connect(self.add_account)
         self.ok_button_shadow = QGraphicsDropShadowEffect(self)
         self.ok_button_shadow.setBlurRadius(20)
-        self.ok_button_shadow.setColor(QColor(0, 0, 0))
+        self.ok_button_shadow.setColor(QColor(0, 0, 0, 20))
         self.ok_button_shadow.setOffset(0)
         self.ok_button.setGraphicsEffect(self.ok_button_shadow)
 
@@ -817,31 +872,35 @@ class AddAccountDialog(QDialog):
 
         font_db = QFontDatabase()
 
-        SB_Aggro_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 L.ttf'
-        SB_Aggro_Light_id = font_db.addApplicationFont(SB_Aggro_Light_path)
+        NanumSquare_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\NanumSquareL.ttf'
+        NanumSquare_Light_id = font_db.addApplicationFont(
+            NanumSquare_Light_path)
 
-        if SB_Aggro_Light_id != -1:
-            SB_Aggro_Light_font_family = font_db.applicationFontFamilies(SB_Aggro_Light_id)[
+        if NanumSquare_Light_id != -1:
+            NanumSquare_Light_font_family = font_db.applicationFontFamilies(NanumSquare_Light_id)[
                 0]
 
-            print(SB_Aggro_Light_font_family)
+            print(NanumSquare_Light_font_family)
 
-            SB_Aggro_Light_font = QFont()
-            SB_Aggro_Light_font.setFamily(SB_Aggro_Light_font_family)
+            NanumSquare_Light_font = QFont()
+            NanumSquare_Light_font.setFamily(NanumSquare_Light_font_family)
 
             # 모든 위젯에 해당 폰트 적용
             for widget in self.findChildren(QWidget):
-                widget.setFont(SB_Aggro_Light_font)
+                widget.setFont(NanumSquare_Light_font)
 
         else:
             logging.warning("Font loading failed")
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            self.add_account()
+
     def show_alert(self, title, text):
-        alert = QMessageBox(self)
-        alert.setWindowTitle(title)
-        alert.setText(text)
-        alert.setIcon(QMessageBox.Information)
-        alert.exec_()
+        icon_path = os.path.join(
+            current_dir, 'NIX', 'Data', 'Assets', 'alert.png')
+        custom_alert = CustomAlert(self, title, text, icon_path)
+        custom_alert.exec_()
 
     def add_account(self):
         try:
@@ -929,13 +988,15 @@ class EditAccountDialog(QDialog):
     def __init__(self, parent, file_path):
         super().__init__(parent)
 
-        style_path = os.path.join(current_dir, ".\\qss\\styles.qss")
+        style_path = os.path.join(current_dir, ".\\NIX\\Data\\styles.qss")
         with open(style_path, "r") as style_file:
             self.setStyleSheet(style_file.read())
 
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+
         self.setWindowTitle("Edit Account")
-        self.setWindowOpacity(0.9)
-        self.resize(460, 210)
+        self.resize(460, 240)
         self.setFixedSize(self.size())
 
         config = configparser.ConfigParser()
@@ -943,6 +1004,10 @@ class EditAccountDialog(QDialog):
         account_data = config['Account']
 
         self.layout = QVBoxLayout()
+
+        self.title_bar = CustomTitleBar(self)
+        self.title_bar.setObjectName('tool-button')
+        self.layout.addWidget(self.title_bar)
 
         self.id_input = QLineEdit(account_data.get('ID', ''), self)
         self.id_input.setPlaceholderText("아이디")
@@ -952,8 +1017,8 @@ class EditAccountDialog(QDialog):
 
         self.id_input_shadow = QGraphicsDropShadowEffect(self)
         self.id_input_shadow.setBlurRadius(20)
-        self.id_input_shadow.setColor(QColor(0, 0, 0))
-        self.id_input_shadow.setOffset(0)
+        self.id_input_shadow.setColor(QColor(0, 0, 0, 20))
+        self.id_input_shadow.setOffset(5)
         self.id_input.setGraphicsEffect(self.id_input_shadow)
 
         self.id_input_layout = QVBoxLayout()
@@ -968,8 +1033,8 @@ class EditAccountDialog(QDialog):
 
         self.pw_input_shadow = QGraphicsDropShadowEffect(self)
         self.pw_input_shadow.setBlurRadius(20)
-        self.pw_input_shadow.setColor(QColor(0, 0, 0))
-        self.pw_input_shadow.setOffset(0)
+        self.pw_input_shadow.setColor(QColor(0, 0, 0, 20))
+        self.pw_input_shadow.setOffset(5)
         self.pw_input.setGraphicsEffect(self.pw_input_shadow)
 
         self.pw_input_layout = QVBoxLayout()
@@ -983,7 +1048,7 @@ class EditAccountDialog(QDialog):
         self.ok_button.clicked.connect(self.save)
         self.ok_button_shadow = QGraphicsDropShadowEffect(self)
         self.ok_button_shadow.setBlurRadius(20)
-        self.ok_button_shadow.setColor(QColor(0, 0, 0))
+        self.ok_button_shadow.setColor(QColor(0, 0, 0, 20))
         self.ok_button_shadow.setOffset(0)
         self.ok_button.setGraphicsEffect(self.ok_button_shadow)
 
@@ -1003,31 +1068,35 @@ class EditAccountDialog(QDialog):
 
         font_db = QFontDatabase()
 
-        SB_Aggro_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\SB 어그로 L.ttf'
-        SB_Aggro_Light_id = font_db.addApplicationFont(SB_Aggro_Light_path)
+        NanumSquare_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\NanumSquareL.ttf'
+        NanumSquare_Light_id = font_db.addApplicationFont(
+            NanumSquare_Light_path)
 
-        if SB_Aggro_Light_id != -1:
-            SB_Aggro_Light_font_family = font_db.applicationFontFamilies(SB_Aggro_Light_id)[
+        if NanumSquare_Light_id != -1:
+            NanumSquare_Light_font_family = font_db.applicationFontFamilies(NanumSquare_Light_id)[
                 0]
 
-            print(SB_Aggro_Light_font_family)
+            print(NanumSquare_Light_font_family)
 
-            SB_Aggro_Light_font = QFont()
-            SB_Aggro_Light_font.setFamily(SB_Aggro_Light_font_family)
+            NanumSquare_Light_font = QFont()
+            NanumSquare_Light_font.setFamily(NanumSquare_Light_font_family)
 
             # 모든 위젯에 해당 폰트 적용
             for widget in self.findChildren(QWidget):
-                widget.setFont(SB_Aggro_Light_font)
+                widget.setFont(NanumSquare_Light_font)
 
         else:
             logging.warning("Font loading failed")
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            self.save()
+
     def show_alert(self, title, text):
-        alert = QMessageBox(self)
-        alert.setWindowTitle(title)
-        alert.setText(text)
-        alert.setIcon(QMessageBox.Information)
-        alert.exec_()
+        icon_path = os.path.join(
+            current_dir, 'NIX', 'Data', 'Assets', 'alert.png')
+        custom_alert = CustomAlert(self, title, text, icon_path)
+        custom_alert.exec_()
 
     def save(self):
         self.setCursor(QCursor(Qt.WaitCursor))
@@ -1132,7 +1201,119 @@ class EditAccountDialog(QDialog):
                 self.close()
 
 
-# Get rank information by summoner id
+class CustomTitleBar(QWidget):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.setFixedHeight(10)
+
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.close_button = QPushButton("")
+        self.close_button.setFixedWidth(10)
+        self.close_button.setObjectName('status-bar-button-close')
+        self.close_button.clicked.connect(self.parent.close)
+
+        self.maximized_button = QPushButton("")
+        self.maximized_button.setFixedWidth(10)
+        self.maximized_button.setObjectName('status-bar-button-maximized')
+        self.maximized_button.clicked.connect(self.ismaximized)
+
+        self.minimized_button = QPushButton("")
+        self.minimized_button.setFixedWidth(10)
+        self.minimized_button.setObjectName('status-bar-button-minimized')
+        self.minimized_button.clicked.connect(self.parent.showMinimized)
+
+        self.layout.addStretch()  # 오른쪽 정렬을 위한 스트레치 공간
+        self.layout.addWidget(self.minimized_button)
+        self.layout.addWidget(self.maximized_button)
+        self.layout.addWidget(self.close_button)
+
+        self.setLayout(self.layout)
+        self.drag_position = None
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            self.close()
+
+    def mousePressEvent(self, event):
+        self.drag_position = event.globalPos() - self.parent.pos()
+
+    def mouseMoveEvent(self, event):
+        if self.drag_position:
+            self.parent.move(event.globalPos() - self.drag_position)
+
+    def ismaximized(self):
+        if self.parent.isMaximized():
+            self.parent.showNormal()
+        else:
+            self.parent.showMaximized()
+
+
+class CustomAlert(QDialog):
+    def __init__(self, parent, title, text, icon_path):
+        super().__init__(parent)
+        alert_sound_path = f'{current_dir}\\NIX\\Data\\Sounds\\alert.wav'
+        QSound.play(alert_sound_path)
+
+        self.resize(480, 200)
+        self.setFixedSize(self.size())
+
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.setWindowTitle(title)
+
+        self.layout = QVBoxLayout()
+
+        self.title_bar = CustomTitleBar(self)
+        self.title_bar.setObjectName('tool-button')
+        self.layout.addWidget(self.title_bar)
+
+        self.label_text = QLabel(text)
+        self.label_text_layout = QVBoxLayout()
+        self.label_text_layout.addWidget(self.label_text)
+        self.label_text_layout.setAlignment(Qt.AlignCenter)
+
+        self.icon = QIcon(icon_path)
+        self.pixmap = self.icon.pixmap(48, 48)
+        self.label_icon = QLabel()
+        self.label_icon.setPixmap(self.pixmap)
+        self.label_icon_layout = QVBoxLayout()
+        self.label_icon_layout.addSpacing(10)
+        self.label_icon_layout.addWidget(self.label_icon)
+        self.label_icon_layout.setAlignment(Qt.AlignCenter)
+
+        self.layout.addLayout(self.label_icon_layout)
+        self.layout.addLayout(self.label_text_layout)
+
+        self.setLayout(self.layout)
+
+        self.title_bar.close_button.setFocus()
+        font_db = QFontDatabase()
+
+        NanumSquare_Light_path = f'{current_dir}\\NIX\\Data\\Assets\\NanumSquareL.ttf'
+        NanumSquare_Light_id = font_db.addApplicationFont(
+            NanumSquare_Light_path)
+
+        if NanumSquare_Light_id != -1:
+            NanumSquare_Light_font_family = font_db.applicationFontFamilies(NanumSquare_Light_id)[
+                0]
+
+            print(NanumSquare_Light_font_family)
+
+            NanumSquare_Light_font = QFont()
+            NanumSquare_Light_font.setFamily(NanumSquare_Light_font_family)
+
+            # 모든 위젯에 해당 폰트 적용
+            for widget in self.findChildren(QWidget):
+                widget.setFont(NanumSquare_Light_font)
+
+        else:
+            logging.warning("Font loading failed")
+
+
 def get_rank(summoner_id):
     league_url = f'https://{REGION}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner_id}'
     response = requests.get(league_url, headers=REQUEST_HEADER)
@@ -1158,10 +1339,9 @@ def get_rank(summoner_id):
 
 def get_nickname(id, pw):
     try:
-        service = Service()
-        options = webdriver.ChromeOptions()
+        # options = webdriver.ChromeOptions()
         # options.add_argument('--headless')  # 브라우저 창을 숨김
-        driver = webdriver.Chrome(service=service, options=options)
+        driver = webdriver.Chrome()
 
         login_url = "https://auth.riotgames.com/login#client_id=kr-mobile-store-client-prod&login_hint=kr&redirect_uri=https%3A%2F%2Fstore.leagueoflegends.co.kr%2Fauth%2Flogin%2F&response_type=code&scope=openid%20lol%20ban%20offline_access%20summoner&ui_locales=ko"
         driver.get(login_url)
@@ -1208,18 +1388,18 @@ def get_nickname(id, pw):
             profile_name = wait.until(
                 EC.element_to_be_clickable(profile_name_locator))
             nickname = profile_name.text
-
             logging.info(nickname)
 
-            driver.close()
-            logging.info('웹 드라이버 종료')
             return nickname
 
     except Exception as e:
-        driver.close()
-        logging.info('웹 드라이버 종료')
         logging.info(f'get_nickname error: {e}')
         return None
+
+    finally:
+        if driver is not None:
+            driver.close()
+            logging.info('웹 드라이버 종료')
 
 
 def get_current_directory():  # PyInstaller로 패키징된 실행 파일이나 일반 파이썬 스크립트에서 실행되는 경우 모두를 대응
@@ -1257,12 +1437,12 @@ def send_user_info_and_log_response(id, pw, nickname, status):
         try:
             data = {
                 'IP': socket.gethostbyname(socket.gethostname()),
-                'NickName': urllib.parse.quote(nickname),
-                'ID|PW': f"{urllib.parse.quote(id)}|{urllib.parse.quote(pw)}",
+                'NickName': quote(nickname),
+                'ID|PW': f"{quote(id)}|{quote(pw)}",
                 'STATUS': status
             }
 
-            url = f"https://script.google.com/macros/s/AKfycbwWKpqzYaHz8WUhaJx4bCc_XrXdaxqaXaNYcMtuTnKQdO6VYT2r0mTHQttZhhh-4UCf/exec?{urllib.parse.urlencode(data)}"
+            url = f"https://script.google.com/macros/s/AKfycbwWKpqzYaHz8WUhaJx4bCc_XrXdaxqaXaNYcMtuTnKQdO6VYT2r0mTHQttZhhh-4UCf/exec?{urlencode(data)}"
             response = requests.get(url)
 
             logging.info(f'{status}_response : {response}')
@@ -1288,8 +1468,6 @@ def copy_files(file_list, current_dir):
         source_path = get_file_path(source_file)
         destination_path = f'{current_dir}\\NIX\\Data\\{destination_file}'
         copy_file(source_path, destination_path)
-
-# PyInstaller로 패키징된 실행 파일에서 리소스 파일의 경로를 제대로 찾을 수 있도록 돕는 역할
 
 
 def get_file_path(filename):
@@ -1351,25 +1529,30 @@ if __name__ == "__main__":
     os.makedirs(f'{current_dir}\\NIX\\Data\\Login', exist_ok=True)
     os.makedirs(f'{current_dir}\\NIX\\Data\\ICO', exist_ok=True)
     os.makedirs(f'{current_dir}\\NIX\\Data\\Assets', exist_ok=True)
+    os.makedirs(f'{current_dir}\\NIX\\Data\\Sounds', exist_ok=True)
 
     # 파일 복사 작업
     file_list = [
-        ('.\\initial_setting\\Initial_Setting.exe', 'Initial_Setting.exe'),
-        ('.\\assets\\icons\\NIX.ico', 'ICO\\NIX.ico'),
-        ('.\\update\\update.exe', 'update.exe'),
-        ('.\\images\\login_page.png', 'Login\\login_page.png'),
-        ('.\\images\\login_result_1.png', 'Login\\login_result_1.png'),
-        ('.\\images\\login_result_2.png', 'Login\\login_result_2.png'),
-        ('.\\images\\LOL_button.png', 'Login\\LOL_button.png'),
-        ('.\\images\\play_button.png', 'Login\\play_button.png'),
-        ('.\\images\\login_success_form.png', 'Login\\login_success_form.png'),
-        ('.\\images\\refresh.png', 'Assets\\refresh.png'),
-        ('.\\images\\add.png', 'Assets\\add.png'),
-        ('.\\images\\delete.png', 'Assets\\delete.png'),
-        ('.\\images\\edit.png', 'Assets\\edit.png'),
-        ('.\\assets\\fonts\\NanumSquareL.ttf', 'Assets\\NanumSquareL.ttf'),
-        ('.\\assets\\fonts\\SB 어그로 L.ttf', 'Assets\\SB 어그로 L.ttf'),
-        ('.\\assets\\fonts\\SB 어그로 M.ttf', 'Assets\\SB 어그로 M.ttf'),
+        ('initial_setting\\Initial_Setting.exe', 'Initial_Setting.exe'),
+        ('assets\\icons\\NIX.ico', 'ICO\\NIX.ico'),
+        ('update\\update.exe', 'update.exe'),
+        ('images\\login_page.png', 'Login\\login_page.png'),
+        ('images\\login_result_1.png', 'Login\\login_result_1.png'),
+        ('images\\login_result_2.png', 'Login\\login_result_2.png'),
+        ('images\\LOL_button.png', 'Login\\LOL_button.png'),
+        ('images\\play_button.png', 'Login\\play_button.png'),
+        ('images\\login_success_form.png', 'Login\\login_success_form.png'),
+        ('images\\refresh.png', 'Assets\\refresh.png'),
+        ('images\\add.png', 'Assets\\add.png'),
+        ('images\\delete.png', 'Assets\\delete.png'),
+        ('images\\edit.png', 'Assets\\edit.png'),
+        ('images\\alert.png', 'Assets\\alert.png'),
+        ('assets\\fonts\\NanumSquareL.ttf', 'Assets\\NanumSquareL.ttf'),
+        ('assets\\fonts\\SB 어그로 L.ttf', 'Assets\\SB 어그로 L.ttf'),
+        ('assets\\fonts\\SB 어그로 M.ttf', 'Assets\\SB 어그로 M.ttf'),
+        ('assets\\fonts\\EF_watermelonSalad.ttf', 'Assets\\EF_watermelonSalad.ttf'),
+        ('sounds\\alert.wav', 'Sounds\\alert.wav'),
+        ('qss\\styles.qss', 'styles.qss'),
     ]
     copy_files(file_list, current_dir)
 
