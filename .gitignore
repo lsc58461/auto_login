@@ -1,5 +1,6 @@
 *.spec
 *.log
+*.code-workspace
 Auto_Login.exe
 nix/
 dist/
