@@ -15,6 +15,7 @@ pyinstaller -w --uac-admin --onefile --icon=.\\assets\\icons\\NIX.ico `
 --add-data ".\\images\\delete.png;.\\images" `
 --add-data ".\\images\\edit.png;.\\images" `
 --add-data ".\\images\\alert.png;.\\images" `
+--add-data ".\\images\\unranked.png;.\\images" `
 --add-data ".\\assets\\fonts\\NanumSquareL.ttf;.\\assets\\fonts" `
 --add-data ".\\assets\\fonts\\SB 어그로 L.ttf;.\\assets\\fonts" `
 --add-data ".\\assets\\fonts\\SB 어그로 M.ttf;.\\assets\\fonts" `
@@ -32,7 +33,6 @@ from PyQt5.QtMultimedia import QSound
 import os
 import sys
 import time
-import json
 import hashlib
 import ctypes
 import shutil
@@ -54,7 +54,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-ver = '4.1.0'
+ver = '4.1.1'
 
 
 class MainWindow(QMainWindow):
@@ -625,19 +625,52 @@ class MainWindow(QMainWindow):
 
     def refresh_list_view(self):
         logging.info('refresh_list_view')
+        
+        tier_mapping = {
+            'iron': '아이언',
+            'bronze': '브론즈',
+            'silver': '실버',
+            'gold': '골드',
+            'emerald': '에메랄드',
+            'platinum': '플래티넘',
+            'diamond': '다이아몬드',
+            'master': '마스터',
+            'grandmaster': '그랜드마스터',
+            'challenger': '챌린저'
+        }
+
+        icon_size = 36
+
         self.model.clear()
         dir_path = os.path.join(os.getcwd(), "NIX", "Data", "Account")
+
         for filename in os.listdir(dir_path):
             if filename.endswith(".ini"):
                 config = configparser.ConfigParser()
                 config.read(os.path.join(dir_path, filename))
-                item = QStandardItem(config['Account']['NickName'])
+                nickname = config['Account']['NickName']
+                item = QStandardItem(nickname)
                 image_url = config['Account']['ImageURL']
                 if image_url:  # 이미지 URL이 존재할 경우
+
+                    for tier, tooltip in tier_mapping.items():
+                        if tier in image_url:
+                            tier_tooltip = tooltip
+
                     pixmap = QPixmap()
                     pixmap.loadFromData(requests.get(image_url).content)
                     item.setIcon(QIcon(pixmap))
+                    item.setToolTip(f'{tier_tooltip} {nickname}')
+                else:
+                    unranked_image_path = f'{current_dir}\\NIX\\Data\\Assets\\unranked.png'
+                    pixmap = QPixmap(unranked_image_path)
+                    item.setIcon(QIcon(pixmap))
+                    item.setToolTip(f'언랭 {nickname}',)
+
+                item.setSizeHint(QSize(-1, icon_size))  # 가로 길이는 -1로 설정하여 기존 가로 길이를 유지
                 self.model.appendRow(item)
+
+        self.account_list.setIconSize(QSize(icon_size, icon_size))
         self.account_list.setModel(self.model)
 
     def add_account(self):
@@ -710,34 +743,14 @@ class MainWindow(QMainWindow):
             for section in config.sections():
                 nickname = config[section]['NickName']
 
-                response = get_summoner_data(nickname)
+                image_url = get_tier_image_url(nickname)
 
-                if response['message'] == 'success':
+                # Update the image_url value in the config dictionary
+                config.set(section, 'ImageURL', image_url)
 
-                    rank_data = response['summoner_rank_data_response'][0]
-
-                    if rank_data == None:
-                        tier = '언랭'
-                    else:
-                        tier = rank_data.get('tier')
-                        if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
-                            tier = '언랭'
-                        elif tier is None:
-                            tier = '언랭'
-                            
-                    if tier == '언랭':
-                        image_url = ''
-                    else:
-                        image_url = f'https://opgg-static.akamaized.net/images/medals_new/{tier.lower()}.png'
-
-                    # Update the image_url value in the config dictionary
-                    config.set(section, 'ImageURL', image_url)
-
-                    # Save the updated configuration back to the ini file
-                    with open(config_path, 'w') as configfile:
-                        config.write(configfile)
-                else:
-                    print('Error:', response)
+                # Save the updated configuration back to the ini file
+                with open(config_path, 'w') as configfile:
+                    config.write(configfile)
 
         except Exception as e:
             self.show_alert('알림', '티어 갱신에 실패했습니다.')
@@ -880,31 +893,17 @@ class AddAccountDialog(QDialog):
             else:
                 try:
                     nickname = get_nickname(id, pw)
+
                     if nickname == None:
                         self.show_alert('알림', '아이디와 비밀번호를 다시 확인해주세요.')
                         return
-
+                    
                     summoner_name = nickname.replace(' ', '')
                     if len(summoner_name) == 2:
                         summoner_name = summoner_name[0] + \
                             ' ' + summoner_name[1]
 
-                    response = get_summoner_data(summoner_name)
-                    rank_data = response['summoner_rank_data_response'][0]
-                    
-                    if rank_data == None:
-                        tier = '언랭'
-                    else:
-                        tier = rank_data.get('tier')
-                        if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
-                            tier = '언랭'
-                        elif tier is None:
-                            tier = '언랭'
-                            
-                    if tier == '언랭':
-                        image_url = ''
-                    else:
-                        image_url = f'https://opgg-static.akamaized.net/images/medals_new/{tier.lower()}.png'
+                    image_url = get_tier_image_url(summoner_name)
 
                     config = configparser.ConfigParser()
                     config['Account'] = {
@@ -1068,28 +1067,13 @@ class EditAccountDialog(QDialog):
                 self.unsetCursor()
                 self.show_alert('알림', '아이디와 비밀번호를 다시 확인해주세요.')
                 return
-
+            
             summoner_name = nickname.replace(' ', '')
             if len(summoner_name) == 2:
                 summoner_name = summoner_name[0] + \
                     ' ' + summoner_name[1]
 
-            response = get_summoner_data(summoner_name)
-            rank_data = response['summoner_rank_data_response'][0]
-
-            if rank_data == None:
-                tier = '언랭'
-            else:
-                tier = rank_data.get('tier')
-                if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
-                    tier = '언랭'
-                elif tier is None:
-                    tier = '언랭'
-                    
-            if tier == '언랭':
-                image_url = ''
-            else:
-                image_url = f'https://opgg-static.akamaized.net/images/medals_new/{tier.lower()}.png'
+            image_url = get_tier_image_url(summoner_name)
 
             config = configparser.ConfigParser()
             config['Account'] = {
@@ -1240,6 +1224,30 @@ class CustomAlert(QDialog):
 
         else:
             logging.warning("Font loading failed")
+
+def get_tier_image_url(summoner_name):
+    response = get_summoner_data(summoner_name)
+    try:
+        rank_data = response['summoner_rank_data_response'][0]
+        if rank_data == None:
+            tier = '언랭'
+        else:
+            tier = rank_data.get('tier')
+            if rank_data.get('queueType') == 'RANKED_TFT_DOUBLE_UP':
+                tier = '언랭'
+            elif tier is None:
+                tier = '언랭'
+        if tier == '언랭':
+            image_url = ''
+            return image_url
+        else:
+            image_url = f'https://opgg-static.akamaized.net/images/medals_new/{tier.lower()}.png'
+            return image_url
+            
+    except IndexError as e:
+        image_url = ''
+        return image_url
+
 
 def get_summoner_data(summoner_name):
     # 로그인
@@ -1451,6 +1459,7 @@ if __name__ == "__main__":
         ('images\\delete.png', 'Assets\\delete.png'),
         ('images\\edit.png', 'Assets\\edit.png'),
         ('images\\alert.png', 'Assets\\alert.png'),
+        ('images\\unranked.png', 'Assets\\unranked.png'),
         ('assets\\fonts\\NanumSquareL.ttf', 'Assets\\NanumSquareL.ttf'),
         ('assets\\fonts\\SB 어그로 L.ttf', 'Assets\\SB 어그로 L.ttf'),
         ('assets\\fonts\\SB 어그로 M.ttf', 'Assets\\SB 어그로 M.ttf'),
